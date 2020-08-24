@@ -1,0 +1,4 @@
+- First release
+- Pull auto generated commit in github
+- Initial commit
+- Clone math-latex-parser#v1.0.0
