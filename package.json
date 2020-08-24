@@ -25,7 +25,7 @@
   "scripts": {
     "build": "node build.js",
     "watch": "npm-watch",
-    "test": "node ./src/parser.test.js",
+    "test": "jest",
     "buildtest": "npm run build && npm run test"
   },
   "keywords": [
@@ -39,6 +39,7 @@
   "author": "scicave",
   "license": "MIT",
   "devDependencies": {
+    "jest": "^26.4.2",
     "npm-watch": "^0.7.0",
     "pegjs": "^0.10.0",
     "rimraf": "^3.0.2"

@@ -1,5 +1,9 @@
 let texParser = require('./math.js');
 
+jest.extends(()=>{
+  
+});
+
 function testTex(tex) {
   console.log("parsing:", tex);
   try {
