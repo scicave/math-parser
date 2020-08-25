@@ -10,50 +10,53 @@ class Node {
 
     this.type = type;
     this.args = args;
-
   }
 
-  check(t){
+  checkType(t){
     if(this.types.values.indexOf(t) > -1){
       if(this.type === t){
         return true;
       }
     } else {
-      throw new Error('invalid type, can\'t check for "' + type + '"');
+      throw new Error('invalid type, can\'t check for "' + t + '"');
     }
   }
+
+  check(props){
+    for(let p in props){
+      if(p === 'type') { if(!this.checkType(props.type)) return false; } 
+      else if(p !== "args" && props[p] !== this[p]) return false;
+    }
+    return true;
+  }
+
 }
 
 Node.prototype.types = {
-
   NUMBER: "number",
   ID: "id",
   FUNCTION: "function",
-
-  PARENTS: "()",
-  BRACES: "{}",
-  BRACKETS: "[]",
-  ROUND_BRACKETS: "()",
-  CURLY_BRACKETS: "{}",
-  SQUARE_BRACKETS: "[]",
-  VBARS: "||",
-
-  MULTPLY: "*",
-  DIVIDE: "/",
-  ADD: "+",
-  SUBTACT: "-",
-  FACT: "!",
-  SUP: "^",
-  LOGIC_AND: "&&",
-  LOGIC_OR: "||",
-  LOGIC_EQ: "==",
-
-  // CDOT: "cdot",
-  // FRAC: "frac",
-  // OPERATORNAME: "operatorname",
-
-}
+  BLOCK: 'block',
+  AUTO_MULT: "automult",
+  OPERATOR:  'operator',
+  DELIMITER: 'delimiter',
+};
 
 Node.prototype.types.values = Object.values(Node.prototype.types);
+
+Node.prototype.types.operators = {
+  "infix": [
+    "*","/","+","-","!",
+    "^","&&","||", "=="
+  ],
+  "postfix": [
+    "!"
+  ]
+};
+
+Node.prototype.types.blocks = [
+  "()", "{}", "[]", "()", "{}", "[]", "||",
+];
+
 
 module.exports = Node;

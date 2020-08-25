@@ -184,9 +184,11 @@ Name "name" = _name {
   return new Node('id', null, {name})
 }
 
-_name = &{ return !options.singleCharName } multi_char_name / char
+_name = multi_char_name  / char
 
-multi_char_name = (char/"_")+[0-9]*
+multi_char_name = &{ return !options.singleCharName } (char/"_")+[0-9]* {
+    return text();
+  }
 
 ///// primitives
 
