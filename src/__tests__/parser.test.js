@@ -7,56 +7,62 @@ expect.extend({
    */
   toHaveStructure(node, struct) {
     // struct number{1}
-    function failed(msg){
-      return { message: () => `${msg}\n\n====================== node ======================\n${JSON.stringify(node, null, 2)}\n\n====================== expected ======================${JSON.stringify(struct, null, 2)}` , pass:false };
+    function failed(msg) {
+      return { message: () => `${msg}\n\n====================== node ======================\n${JSON.stringify(node, null, 2)}\n\n====================== expected ======================${JSON.stringify(struct, null, 2)}`, pass: false };
     }
 
-    if(!(node instanceof parser.Node)) {
+    if (!(node instanceof parser.Node)) {
       return failed(`Received value has to be instance of parser.Node`, node);
     }
 
-    if(!(struct instanceof Object)) {
+    if (!(struct instanceof Object)) {
       return failed(`"struct" is type of ${typeof struct}, toHaveStructure checks the match between parser.Node and object.`, node);
     }
 
-    function _check(n, s){
-      if(!n.check(s)){
-        let _n  = {...n}, _s={...s};
+    function _check(n, s, nPath, sPath) {
+
+      nPath = (nPath ? nPath + '.' : '') + n.type;
+      sPath = (sPath ? sPath + '.' : '') + s.type;
+
+      if (!n.check(s)) {
+        let _n = { ...n }, _s = { ...s };
         delete _n.args; delete _s.args;
         _n = JSON.stringify(_n); _s = JSON.stringify(_s);
-        return failed(`properties of ${_n} in node, don't match these of ${_s} of struct`, node);
+        return failed(`properties of ${nPath} in node, don't match these of ${sPath} of struct`, node);
       }
-      if(s.args && n.args){
-        if(s.args.length !== n.args.length){
-          let _n  = {...n}, _s={...s};
+
+      if (s.args && n.args) {
+        if (s.args.length !== n.args.length) {
+          let _n = { ...n }, _s = { ...s };
           delete _n.args; delete _s.args;
           _n = JSON.stringify(_n); _s = JSON.stringify(_s);
-          return failed(`${_s} in struct and ${_n} in node args has different lengths`, node);
+          return failed(`${sPath} in struct and ${nPath} in node args has different lengths`, node);
         }
-        for(let i = 0; i < s.args.length; i++){
-          let c = _check(n.args[i], s.args[i]);
-          if(c) return c; // here a problem is found
+        for (let i = 0; i < s.args.length; i++) {
+          let c = _check(n.args[i], s.args[i], nPath, sPath);
+          if (c) return c; // here a problem is found
         }
-      }else if(s.args || n.args){
-        let _n  = {...n}, _s={...s};
+      } else if (s.args || n.args) {
+        let _n = { ...n }, _s = { ...s };
         delete _n.args; delete _s.args;
         _n = JSON.stringify(_n); _s = JSON.stringify(_s);
-        if(s.args){
-          return failed(`${_s} in struct has args but ${_n} in node doesn't`, node);
+        if (s.args) {
+          return failed(`${sPath} in struct has args but ${nPath} in node doesn't`, node);
         } else {
-          return failed(`${_n} in node has args but ${_s} in struct doesn't`, node);
-        } 
+          return failed(`${nPath} in node has args but ${sPath} in struct doesn't`, node);
+        }
       }
+
     }
 
     return (
       _check(node, struct) ||
-      { message: ()=> "Parse-tree matches the structure object!", pass: true }
+      { message: () => "Parse-tree matches the structure object!", pass: true }
     );
   },
 });
 
-function parse(math, options={}) {
+function parse(math, options = {}) {
   try {
     return parser.parse(math, options);
   } catch (e) {
@@ -66,19 +72,19 @@ function parse(math, options={}) {
       let i = e.location.start.line - 1;
       let lines = math.split('\n');
 
-      let log = function (){
-        if (i - 2 > -1) 
-        console.log(lines[i - 2]);
-        if (i - 1 > -1) 
-        console.log(lines[i - 1]);
+      let log = function () {
+        if (i - 2 > -1)
+          console.log(lines[i - 2]);
+        if (i - 1 > -1)
+          console.log(lines[i - 1]);
         console.log();
         console.log(lines[i]);
         console.log((new Array(e.location.start.column - 1)).fill("_").join('') + "^");
         console.log();
-        if (i + 1 < lines.length) 
-        console.log(lines[i + 1]);
-        if (i + 2 < lines.length) 
-        console.log(lines[i + 2]);
+        if (i + 1 < lines.length)
+          console.log(lines[i + 1]);
+        if (i + 2 < lines.length)
+          console.log(lines[i + 2]);
       };
 
       log();
@@ -89,9 +95,9 @@ function parse(math, options={}) {
   }
 }
 
-describe('parse basic arithmetics', ()=>{
-  
-  test("1+2^1.2 / x * -5.236 --2", ()=>{
+describe('parse basic arithmetics', () => {
+
+  test("1+2^1.2 / x * -5.236 --2", () => {
     expect(parse('1+2^1.2 / x * -5.236 --2')).toHaveStructure({
       type: 'operator', name: "-",
       "args": [
@@ -127,11 +133,11 @@ describe('parse basic arithmetics', ()=>{
 
 });
 
-describe('tests singleCharName=true', ()=>{
+describe('tests singleCharName=true', () => {
 
-  describe("tests intellicense, automult", ()=>{
-    
-    test('tests: 2xsiny', ()=>{
+  describe("tests intellicense, automult", () => {
+
+    test('tests: 2xsiny', () => {
       expect(parse('2xsiny')).toHaveStructure({
         "type": "automult",
         "args": [
@@ -161,8 +167,8 @@ describe('tests singleCharName=true', ()=>{
         ]
       });
     });
-    
-    test('tests: sinxcosx', ()=>{
+
+    test('tests: sinxcosx', () => {
       expect(parse('sinxcosx')).toHaveStructure({
         "type": "automult",
         "args": [
@@ -185,18 +191,18 @@ describe('tests singleCharName=true', ()=>{
         ]
       });
     });
-  
+
   });
 
 });
 
-describe('tests singleCharName=false', ()=>{
-  
+describe('tests singleCharName=false', () => {
+
   let parserOptions = { singleCharName: false };
 
-  describe.only("tests intellicense, automult", ()=>{
-    
-    test('tests: 2axsiny', ()=>{
+  describe.only("tests intellicense, automult", () => {
+
+    test('tests: 2axsiny', () => {
       expect(parse('2axsiny', parserOptions)).toHaveStructure({
         "type": "automult",
         "args": [
@@ -206,20 +212,15 @@ describe('tests singleCharName=false', ()=>{
       });
     });
 
-    test.only('tests: 2axsin3y', ()=>{
+    test.only('tests: 2axsin3y', () => {
       expect(parse('2axsin3y', parserOptions)).toHaveStructure({
         type: 'automult',
         args: [
           {
-            "type": "automult",
-            "args": [
-              {
-                type: 'automult',
-                args: [
-                  { value: 2, type: 'number', },
-                  { name: 'ax', type: 'id', },
-                ]
-              }
+            type: 'automult',
+            args: [
+              { value: 2, type: 'number', },
+              { name: 'ax', type: 'id', },
             ]
           }, {
             type: 'function',
@@ -239,22 +240,18 @@ describe('tests singleCharName=false', ()=>{
       });
     });
 
-    test.only('tests: 2 ax   sin3y', ()=>{
+    test.only('tests: 2 ax   sin3y', () => {
       expect(parse('2 ax   sin3y', parserOptions)).toHaveStructure({
         type: 'automult',
         args: [
           {
-            "type": "automult",
-            "args": [
-              {
-                type: 'automult',
-                args: [
-                  { value: 2, type: 'number', },
-                  { name: 'ax', type: 'id', },
-                ]
-              }
+            type: 'automult',
+            args: [
+              { value: 2, type: 'number', },
+              { name: 'ax', type: 'id', },
             ]
-          }, {
+          },
+          {
             type: 'function',
             isBuiltIn: true,
             name: 'sin',
@@ -271,18 +268,18 @@ describe('tests singleCharName=false', ()=>{
         ]
       });
     });
-    
-    test('tests: sinxcosx', ()=>{
+
+    test('tests: sinxcosx', () => {
       expect(parse('sinxcosx', parserOptions)).toHaveStructure({
         type: 'id', name: 'sinxcosx'
       });
     });
 
-    test('tests: xsin2z', ()=>{
+    test('tests: xsin2z', () => {
       expect(parse('xsin2z', parserOptions)).toHaveStructure({
         type: 'automult',
         args: [
-          {type: 'id', name: 'x'},
+          { type: 'id', name: 'x' },
           {
             type: 'function',
             isBuiltIn: true,
@@ -301,15 +298,15 @@ describe('tests singleCharName=false', ()=>{
       });
     });
 
-    test('tests: sin 2 xa sd cos3x', ()=>{
+    test('tests: sin 2 xa sd cos3x', () => {
       expect(parse('sin 2 xa sd cos3x', parserOptions)).toThrow(parser.SyntaxError);
     });
 
-    test('tests: sin 2 xasdcos3x + 1', ()=>{
+    test('tests: sin 2 xasdcos3x + 1', () => {
       expect(parse('sin 2 xasdcos3x + 1', parserOptions)).toThrow(parser.SyntaxError);
     });
-  
+
   });
-  
+
 });
 
