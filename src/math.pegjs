@@ -1,3 +1,4 @@
+// TODO: add match={location, text} automatically into any node
 {
   options = Object.assign({
     autoMult: true,
@@ -116,8 +117,8 @@ Functions "functions" =
   BuiltInFunctions / Function
 
 BuiltInFunctions =
-  name:builtInFuncsTitles _ exp:SuperScript? _ arg:builtInFuncsArg {
-    let func = new Node('function', [arg], {name, isBuiltIn:true});
+  callee:builtInFuncsTitles _ exp:SuperScript? _ arg:builtInFuncsArg {
+    let func = new Node('function', [arg], {callee, isBuiltIn:true});
     if(!exp) return func;
     else return new Node('^', [func, exp]);
   }
@@ -128,12 +129,15 @@ builtInFuncsTitles = // the same as options.builtInFunctions
   "arsinh"/ "arcosh"/ "artanh"/ "arsech"/  "arcsch"/ "arcoth"/
   "sin"/ "cos"/ "tan"/ "sec"/  "csc"/  "cot"/
   "asin"/ "acos"/ "atan"/ "asec"/ "acsc"/  "acot"/
-  "arcsin"/ "arccos"/ "arctan"/ "arcsec"/  "arccsc"/  "arccot"/ 
-  "ln"/ "log"/ "exp"/ "floor"/ "ceil"/ "round"/ "random" / "sum"
+  "arcsin"/ "arccos"/ "arctan"/ "arcsec"/  "arccsc"/ "arccot"/ 
+  "ln"/ "log"/ "exp"/ "floor"/ "ceil"/ "round"/ "random" / "sum" {
+	  return new Node('id', null, { name: text() });
+  }
 
+// TODO: 2axsin3y when options.singleCharName=false
 builtInFuncsArg = 
   (
-    head:(Number / !Functions n:Name { return n; })
+    head:(Number / &{ return options.singleCharName } !Functions n:Name { return n; })
     tail:(_ (!Functions n:Name { return n; }))* {
       if(options.autoMult){
         return tail.reduce(function(result, element) {
@@ -149,8 +153,8 @@ builtInFuncsArg =
   ) /* reset of the factors */ / BlockpParentheses / BlockVBars / Functions
 
 Function = 
-  name:$_name &{ return options.functions.indexOf(name)>-1; } _ parentheses:BlockpParentheses 
-  { return new Node('function', parentheses, { name }); }
+  callee:Name &{ return options.functions.indexOf(name)>-1; } _ parentheses:BlockpParentheses 
+  { return new Node('function', parentheses, { callee }); }
 
 BlockpParentheses =
   "(" args:Seperator ")" { return new Node('()', args); }
@@ -184,6 +188,7 @@ sign
 
 //////////////
 
+// TODO: member expression, e.g., "something.someProperty" ... the dot between them
 Name "name" = _name {
   let name = text();
   if(options.builtInFunctions.indexOf(name) > -1 || options.functions.indexOf(name) > -1){
@@ -195,6 +200,10 @@ Name "name" = _name {
 _name = &{ return !options.singleCharName } multi_char_name / char
 
 multi_char_name = (char/"_")+[0-9]*
+
+multi_char_name_no_number = &{ return !options.singleCharName } (char/"_")+[0-9]* {
+    return text();
+  }
 
 ///// primitives
 

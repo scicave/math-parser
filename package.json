@@ -14,12 +14,14 @@
   "watch": {
     "buildtest": {
       "patterns": [
-        "src"
+        "./src"
       ],
-      "ignore": "src/index.js",
-      "quiet": true,
-      "delay": 2500,
-      "runOnChangeOnly": false
+      "extensions": [
+        "pegjs", "js"
+      ],
+      "ignore": [
+        "./src/__tests__"
+      ]
     }
   },
   "scripts": {
