@@ -12,19 +12,26 @@
   },
   "homepage": "https://github.com/scicave/math-parser#readme",
   "watch": {
-    "build": {
+    "buildtest": {
       "patterns": [
-        "./src/*.{pegjs,js}"
+        "./src"
       ],
-      "runOnChangeOnly": false
+      "extensions": [
+        "pegjs", "js"
+      ],
+      "ignore": [
+        "./src/__tests__"
+      ]
     }
   },
   "scripts": {
     "build": "node build.js",
     "watch": "npm-watch",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "buildtest": "npm run build && npm run test"
+    "test": "node ./src/parser.test.js",
+    "buildtest": "npm run build && npm run test",
+    "release:major": "changelog -M && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version major && git push origin && git push origin --tags",
+    "release:minor": "changelog -m && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version minor && git push origin && git push origin --tags",
+    "release:patch": "changelog -p && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version patch && git push origin && git push origin --tags"
   },
   "keywords": [
     "parser",
@@ -37,7 +44,6 @@
   "author": "scicave",
   "license": "MIT",
   "devDependencies": {
-    "jest": "^26.4.2",
     "npm-watch": "^0.7.0",
     "pegjs": "^0.10.0",
     "rimraf": "^3.0.2"
