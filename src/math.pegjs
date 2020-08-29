@@ -1,9 +1,9 @@
-// TODO: add match={location, text} automatically into any node
 {
   options = Object.assign({
     autoMult: true,
     functions: [],
     singleCharName: true,
+    memberExpressionAllowed: true,
     builtInFunctions: [
       "sinh", "cosh", "tanh", "sech",  "csch",  "coth",  
       "arsinh", "arcosh", "artanh", "arsech",  "arcsch", "arcoth",
@@ -13,84 +13,105 @@
       "ln", "log", "exp", "floor", "ceil", "round", "random"
     ]
   }, options); /// override the default options
+  
+  function createNode(...args){
+    let n = new Node(...args);
+    n.match = {
+      location: location(),
+      text: text(),
+    }
+    return n;
+  }
+  
 }
 
 Expression "expression" = _ expr:Operation11 _ { return expr; }
 
 Operation11 "operation or factor" = 
-  head:Operation12 tail:(_ "=" _ Operation12)* _{
+  head:Operation12 tail:(_ "=" _ Operation12)* {
+        // left to right
     return tail.reduce(function(result, element) {
-      return new Node('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
+      return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
     }, head);
   }
 
 Operation12 "operation or factor" = 
-  head:Operation13 tail:(_ "||" _ Operation13)* _{
+  head:Operation13 tail:(_ "||" _ Operation13)* {
+        // left to right
     return tail.reduce(function(result, element) {
-      return new Node('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
+      return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
     }, head);
   }
 
 Operation13 "operation or factor" = 
-  head:Operation14 tail:(_ "&&" _ Operation14)* _{
+  head:Operation14 tail:(_ "&&" _ Operation14)* {
+        // left to right
     return tail.reduce(function(result, element) {
-      return new Node('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
+      return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
     }, head);
   }
 
 Operation14 "operation or factor" = 
-  head:Operation15 tail:(_ "==" _ Operation15)* _{
+  head:Operation15 tail:(_ "==" _ Operation15)* {
+        // left to right
     return tail.reduce(function(result, element) {
-      return new Node('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
+      return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
     }, head);
   }
 
 Operation15 "operation or factor" = 
-  head:Operation2 tail:(_ (">" / "<" / ">=" / "<=") _ Operation2)* _{
+  head:Operation2 tail:(_ (">" / "<" / ">=" / "<=") _ Operation2)* {
+        // left to right
     return tail.reduce(function(result, element) {
-      return new Node('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
+      return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
     }, head);
   }
 
 Operation2 "operation or factor" =
-  head:Operation3 tail:(_ ("+" / "-") _ Operation3)* _{
+  head:Operation3 tail:(_ ("+" / "-") _ Operation3)* {
+        // left to right
     return tail.reduce(function(result, element) {
-      return new Node('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
+      return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
     }, head);
   }
 
 Operation3 "operation or factor" =
   head:Operation4 tail:(_ ("*" / "/") _ Operation4)* {
+        // left to right
     return tail.reduce(function(result, element) {
-      return new Node('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
+      return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
     }, head);
   }
 
 Operation4 "operation or factor" = /// series of multiplication or one "Factor"
   head:(Operation5) tail:(_ operation5WithoutNumber)* {
     if(options.autoMult){
+        // left to right
       return tail.reduce(function(result, element) {
-        return new Node("automult" , [result, element[1]]);
+        return createNode("automult" , [result, element[1]]);
       }, head);
     }
     error('invalid syntax, hint: missing * sign');
   }
   
 Operation5 "operation or factor" =
-  base:Factor _ exp:SuperScript? _ fac:factorial? {
-    if (exp) base = new Node('operator', [base, exp], {name:'^', operatorType: 'infix'});
-    if (fac) base = new Node('postfix operator', [base], {name: '!', operatorType: 'postfix'});
+  base:Factor _ exp:SuperScript?{
+    if (exp) base = createNode('operator', [base, exp], {name:'^', operatorType: 'infix'});
     return base;
   }
 
 operation5WithoutNumber "operation or factor" =
-  base:factorWithoutNumber _ exp:SuperScript? _ fac:factorial? {
-    if (exp) base = new Node('operator', [base, exp], {name:'^', operatorType: 'infix'});
-    if (fac) base = new Node('postfix operator', [base], {name: '!', operatorType: 'postfix'});
+  base:factorWithoutNumber _ exp:SuperScript?{
+    if (exp) base = createNode('operator', [base, exp], {name:'^', operatorType: 'infix'});
     return base;
   }
 
-Factor
+Factor = base:_factor _ fac:factorial? {
+  if (fac) base = createNode('operator', [base], {name: '!', operatorType: 'postfix'});
+  return base;
+}
+
+_factor
   = factorWithoutNumber / Number
 
 factorWithoutNumber =
@@ -102,9 +123,9 @@ factorWithoutNumber =
 //   Name
 
 Delimiter
-  = head:Expression tail:(_ "," _ (Expression))* _{
+  = head:Expression tail:(_ "," _ (Expression))* {
       if (tail.length){
-        return new Node('delimiter', [head].concat(tail.map(a => a[3])), {name: ','});
+        return createNode('delimiter', [head].concat(tail.map(a => a[3])), {name: ','});
       }
       return head;
     }
@@ -112,32 +133,35 @@ Delimiter
 Functions "functions" =
   BuiltInFunctions / Function
 
+FunctionsNME = BuiltInFunctions / FunctionNME
+
 BuiltInFunctions =
   callee:builtInFuncsTitles _ exp:SuperScript? _ arg:builtInFuncsArg {
-    let func = new Node('function', [arg], {callee, isBuiltIn:true});
+    let func = createNode('function', [arg], {callee, isBuiltIn:true});
     if(!exp) return func;
-    else return new Node('operator', [func, exp], {name: '^', operatorType: 'infix'});
+    else return createNode('operator', [func, exp], {name: '^', operatorType: 'infix'});
   }
 
-// builtInFuncsTitles = n:$multi_char_name &{ return options.builtInFunctions.indexOf(n) > -1 } { return text(); }
-builtInFuncsTitles = ( // the same as options.builtInFunctions
+// builtInFuncsTitles = 
+builtInFuncsTitles =
+  &{ return options.singleCharName } ( // the same as options.builtInFunctions
     "sinh"/ "cosh"/ "tanh"/ "sech"/  "csch"/  "coth"/  
     "arsinh"/ "arcosh"/ "artanh"/ "arsech"/ "arcsch"/ "arcoth"/
     "sin"/ "cos"/ "tan"/ "sec"/ "csc"/  "cot"/
     "asin"/ "acos"/ "atan"/ "asec"/ "acsc"/  "acot"/
     "arcsin"/ "arccos"/ "arctan"/ "arcsec"/  "arccsc"/ "arccot"/ 
     "ln"/ "log"/ "exp"/ "floor"/ "ceil"/ "round"/ "random" / "sum"
-  ) {
-	  return new Node('id', null, { name: text() });
-  }
+  ) { return createNode('id', null, { name: text() }); } /
+  n:$multiCharName &{ return options.builtInFunctions.indexOf(n) > -1 } { return createNode('id', null, { name: text() });; }
 
 builtInFuncsArg = 
   (
     head:(Number / !Functions n:Name { return n; })
     tail:(_ (!Functions n:Name { return n; }))* {
       if(options.autoMult){
+        // left to right
         return tail.reduce(function(result, element) {
-          return new Node("automult" , [result, element[1]]);
+          return createNode("automult" , [result, element[1]]);
         }, head);
       }
       error('invalid syntax, hint: missing * sign');
@@ -147,13 +171,18 @@ builtInFuncsArg =
 // TODO: 2axsin3y
 Function = 
   callee:Name &{ return options.functions.indexOf(callee.name)>-1; } _ parentheses:BlockpParentheses 
-  { return new Node('function', parentheses, { callee }); }
+  { return createNode('function', parentheses, { callee }); }
+
+// not member expression
+FunctionNME =
+  callee:NameNME &{ return options.functions.indexOf(callee.name)>-1; } _ parentheses:BlockpParentheses 
+  { return createNode('function', parentheses, { callee }); }
 
 BlockpParentheses =
-  "(" args:Delimiter /* returns Expression id no delimiter found */ ")" { return new Node('block', [args], {name: '()'}); }
+  "(" args:Delimiter /* returns Expression id no delimiter found */ ")" { return createNode('block', [args], {name: '()'}); }
 
 BlockVBars =
-  "|" expr:Expression "|" { return new Node('block', [expr], {name: '||'}) }
+  "|" expr:Expression "|" { return createNode('block', [expr], {name: '||'}) }
 
 ////// main factor, tokens
 
@@ -164,13 +193,13 @@ SuperScript "superscript"= "^" _ arg:Factor { return arg; }
 Number "number"
   = sign:sign? _ $SimpleNumber {
     let value = parseFloat(text());
-    return new Node('number', null, {value});
+    return createNode('number', null, {value});
   }
 
 SimpleNumber "number"
   = (num:[0-9][0-9]* frac? / frac) {
     let value = parseFloat(text());
-    return new Node('number', null, {value});
+    return createNode('number', null, {value});
   }
 
 frac
@@ -181,21 +210,35 @@ sign
 
 //////////////
 
-Name "name" = _name {
+Name "name" = m:MemberExpression {
+  if(!options.memberExpressionAllowed) error('member expression is no allowed');
+  return m;
+ } / NameNME
+
+// not member expression
+NameNME = _name {
   let name = text();
   if(options.builtInFunctions.indexOf(name) > -1 || options.functions.indexOf(name) > -1){
     error(`the function "${name}" it used with no arguments! can't use the function a variable!`);
   }
-  return new Node('id', null, {name})
+  return createNode('id', null, {name})
 }
 
-_name = &{ return !options.singleCharName } multi_char_name / char
+_name = &{ return !options.singleCharName } multiCharName / char[0-9]*
 
-multi_char_name = (char/"_")+[0-9]*
+multiCharName "multi char name"= (char/"_")+[0-9]*
 
-// multi_char_name_no_number = &{ return !options.singleCharName } (char/"_")+[0-9]* {
-//     return text();
-//   }
+MemberExpression "member expression" =
+  head:memberArg _ "." chain:( _ memberArg _ ".")* _ tail:NameNME{
+    // left to right
+    let arg1 = chain.reduce(function(result, element) {
+      return createNode('member expression' , [result, element[1]]);
+    }, head);
+    return createNode('member expression' , [arg1, tail]);
+  }
+
+// not member expression
+memberArg = FunctionsNME / NameNME 
 
 ///// primitives
 
@@ -210,6 +253,6 @@ sp "space or tab"= [ \t]
 s "whitespace" = nl / sp
 
 _ "whitespace"
-  = (nl !nl / sp)*
+  = (nl / sp)*
 
 factorial = "!" 

@@ -41,7 +41,8 @@
     "watch": "npm-watch",
     "test": "jest",
     "test:watch": "jest --watch",
-    "buildtest": "npm run build && npm run test"
+    "buildtest": "npm run build && npm run test",
+    "preversion": "npm run buildtest"
   },
   "keywords": [
     "parser",

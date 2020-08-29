@@ -8,9 +8,25 @@ expect.extend({
    * @param {Obj} struct
    */
   toHaveStructure(node, struct) {
-    // struct number{1}
     function failed(msg) {
-      return { message: () => `${msg}\n\n====================== node ======================\n${JSON.stringify(node, null, 2)}\n\n====================== expected ======================${JSON.stringify(struct, null, 2)}`, pass: false };
+      function simplify(o){
+        JSON.stringify(o);
+        if(typeof o !== 'object') return o;
+        let r = {};
+        let ignore = ['match', 'operatorType'];
+        for(let p in o){
+          if(ignore.indexOf(p) === -1 && o.hasOwnProperty(p)){
+            r[p] = simplify(o[p]);
+          }
+        }
+        return r;
+      }
+      let simple_node = simplify(node);
+      let simple_struct = simplify(struct);
+      return {
+        message: () => `${msg}\n====================== node ======================\n${JSON.stringify(simple_node, null, 2)}\n====================== expected ======================\n${JSON.stringify(simple_struct, null, 2)}`,
+        pass: false,
+      };
     }
 
     if (!(node instanceof parser.Node)) {
@@ -93,8 +109,8 @@ function parse(math, options = {}) {
 
 describe('parse basic arithmetics', () => {
 
-  test("1+2^1.2 / x * -5.236 --2", () => {
-    expect(parse('1+2^1.2 / x * -5.236 --2')).toHaveStructure({
+  test("1+2^1.2 / x ! * -5.236 --2", () => {
+    expect(parse('1+2^1.2 / x ! * -5.236 --2')).toHaveStructure({
       type: 'operator', name: "-",
       "args": [
         {
@@ -114,7 +130,13 @@ describe('parse basic arithmetics', () => {
                         { value: 1.2, type: "number" },
                       ]
                     },
-                    { name: "x", type: "id", }
+                    {
+                      type: 'operator',
+                      operatorType: 'postfix',
+                      args: [
+                        { name: "x", type: "id", }
+                      ]
+                    }
                   ]
                 },
                 { value: -5.236, type: "number" },
@@ -131,6 +153,43 @@ describe('parse basic arithmetics', () => {
 
 describe('tests singleCharName=true', () => {
 
+  test("member expression: p1.x", ()=>{
+    expect(parse('p1.x')).toHaveStructure({
+      type: 'member expression', 
+      args: [
+        {type: 'id', name: 'p1'},
+        {type: 'id', name: 'x'},
+      ]
+    });
+  });
+
+  test("member expression: 1+ p1.x^2!", ()=>{
+    expect(parse('1+ p1.x^2!')).toHaveStructure({
+      type: 'operator', operatorType: 'infix', name: '+',
+      args: [
+        {type: 'number', value: 1},
+        {
+          type: 'operator', operatorType: 'infix', name: '^',
+          args: [
+            {
+              type: 'member expression', 
+              args: [
+                {type: 'id', name: 'p1'},
+                {type: 'id', name: 'x'},
+              ]
+            },
+            {
+              type: 'operator', operatorType: 'postfix', name: '!',
+              args: [
+                {type: 'number', value: 2},
+              ]
+            }
+          ]
+        }
+      ]
+    });
+  });
+  
   describe("tests intellicense, automult", () => {
 
     test('tests: 2xsiny', () => {
@@ -208,91 +267,94 @@ describe('tests singleCharName=false', () => {
       });
     });
 
-    test('tests: 2axsin3y', () => {
-      expect(parse('2axsin3y', parserOptions)).toHaveStructure({
-        type: 'automult',
-        args: [
-          {
-            type: 'automult',
-            args: [
-              { value: 2, type: 'number', },
-              { name: 'ax', type: 'id', },
-            ]
-          }, {
-            type: 'function',
-            isBuiltIn: true,
-            callee: {type: 'id', name: 'sin'},
-            args: [
-              {
-                type: 'automult',
-                args: [
-                  { value: 3, type: 'number', },
-                  { name: 'y', type: 'id', },
-                ]
-              }
-            ]
-          }
-        ]
-      });
-    });
-
-    test('tests: 2 ax   sin3y', () => {
-      expect(parse('2 ax   sin3y', parserOptions)).toHaveStructure({
-        type: 'automult',
-        args: [
-          {
-            type: 'automult',
-            args: [
-              { value: 2, type: 'number', },
-              { name: 'ax', type: 'id', },
-            ]
-          },
-          {
-            type: 'function',
-            isBuiltIn: true,
-            callee: {type: 'id', name: 'sin'},
-            args: [
-              {
-                type: 'automult',
-                args: [
-                  { value: 3, type: 'number', },
-                  { name: 'y', type: 'id', },
-                ]
-              }
-            ]
-          }
-        ]
-      });
-    });
-
     test('tests: sinxcosx', () => {
       expect(parse('sinxcosx', parserOptions)).toHaveStructure({
         type: 'id', name: 'sinxcosx'
       });
     });
 
-    test('tests: xsin2z', () => {
-      expect(parse('xsin2z', parserOptions)).toHaveStructure({
-        type: 'automult',
-        args: [
-          { type: 'id', name: 'x' },
-          {
-            type: 'function',
-            isBuiltIn: true,
-            callee: {type: 'id', name: 'sin'},
-            args: [
-              {
-                type: 'automult',
-                args: [
-                  { type: 'number', value: 2 },
-                  { type: 'id', name: 'z' },
-                ]
-              }
-            ]
-          }
-        ]
-      });
-    });
+    //#region TODO: next release
+
+    // test('tests: 2 ax   sin3y', () => {
+    //   expect(parse('2 ax   sin3y', parserOptions)).toHaveStructure({
+    //     type: 'automult',
+    //     args: [
+    //       {
+    //         type: 'automult',
+    //         args: [
+    //           { value: 2, type: 'number', },
+    //           { name: 'ax', type: 'id', },
+    //         ]
+    //       },
+    //       {
+    //         type: 'function',
+    //         isBuiltIn: true,
+    //         callee: {type: 'id', name: 'sin'},
+    //         args: [
+    //           {
+    //             type: 'automult',
+    //             args: [
+    //               { value: 3, type: 'number', },
+    //               { name: 'y', type: 'id', },
+    //             ]
+    //           }
+    //         ]
+    //       }
+    //     ]
+    //   });
+    // });
+
+    // test('tests: xsin2z', () => {
+    //   expect(parse('xsin2z', parserOptions)).toHaveStructure({
+    //     type: 'automult',
+    //     args: [
+    //       { type: 'id', name: 'x' },
+    //       {
+    //         type: 'function',
+    //         isBuiltIn: true,
+    //         callee: {type: 'id', name: 'sin'},
+    //         args: [
+    //           {
+    //             type: 'automult',
+    //             args: [
+    //               { type: 'number', value: 2 },
+    //               { type: 'id', name: 'z' },
+    //             ]
+    //           }
+    //         ]
+    //       }
+    //     ]
+    //   });
+    // });
+
+
+    // test('tests: 2axsin3y', () => {
+    //   expect(parse('2axsin3y', parserOptions)).toHaveStructure({
+    //     type: 'automult',
+    //     args: [
+    //       {
+    //         type: 'automult',
+    //         args: [
+    //           { value: 2, type: 'number', },
+    //           { name: 'ax', type: 'id', },
+    //         ]
+    //       }, {
+    //         type: 'function',
+    //         isBuiltIn: true,
+    //         callee: {type: 'id', name: 'sin'},
+    //         args: [
+    //           {
+    //             type: 'automult',
+    //             args: [
+    //               { value: 3, type: 'number', },
+    //               { name: 'y', type: 'id', },
+    //             ]
+    //           }
+    //         ]
+    //       }
+    //     ]
+    //   });
+    // });
 
     // test('tests: sin 2 xa sd cos3x', () => {
     //   expect(()=>parse('sin 2 xa sd cos3x', parserOptions)).toThrow(parser.SyntaxError);
@@ -301,6 +363,8 @@ describe('tests singleCharName=false', () => {
     // test('tests: sin 2 xasdcos3x + 1', () => {
     //   expect(()=>parse('sin 2 xasdcos3x + 1', parserOptions)).toThrow(parser.SyntaxError);
     // });
+    
+    //#endregion
 
   });
 
