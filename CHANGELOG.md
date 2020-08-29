@@ -1,5 +1,10 @@
+# v2.0.0-0
+Summary of Changes:
+- Fix ReferenceError: identifier "name" is not defined.
+Summary of Changes (dev):
+- Remove .toThrow tests from src/__tests__/parser.test.js
 
-# v1.1.0-pre
+# v1.1.0-0
 Summary of Changes:
 - Node has check and checkType methods:
   * check: to check for all property except args
