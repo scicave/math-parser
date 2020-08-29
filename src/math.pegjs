@@ -95,20 +95,23 @@ Operation4 "operation or factor" = /// series of multiplication or one "Factor"
   }
   
 Operation5 "operation or factor" =
-  base:Factor _ exp:SuperScript? _ fac:factorial? {
+  base:Factor _ exp:SuperScript?{
     if (exp) base = createNode('operator', [base, exp], {name:'^', operatorType: 'infix'});
-    if (fac) base = createNode('operator', [base], {name: '!', operatorType: 'postfix'});
     return base;
   }
 
 operation5WithoutNumber "operation or factor" =
-  base:factorWithoutNumber _ exp:SuperScript? _ fac:factorial? {
+  base:factorWithoutNumber _ exp:SuperScript?{
     if (exp) base = createNode('operator', [base, exp], {name:'^', operatorType: 'infix'});
-    if (fac) base = createNode('postfix', [base], {name: '!', operatorType: 'postfix'});
     return base;
   }
 
-Factor
+Factor = base:_factor _ fac:factorial? {
+  if (fac) base = createNode('operator', [base], {name: '!', operatorType: 'postfix'});
+  return base;
+}
+
+_factor
   = factorWithoutNumber / Number
 
 factorWithoutNumber =
