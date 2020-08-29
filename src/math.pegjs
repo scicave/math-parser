@@ -1,3 +1,4 @@
+// TODO: add match={location, text} automatically into any node
 {
   options = Object.assign({
     autoMult: true,
@@ -112,20 +113,23 @@ Functions "functions" =
   BuiltInFunctions / Function
 
 BuiltInFunctions =
-  name:builtInFuncsTitles _ exp:SuperScript? _ arg:builtInFuncsArg {
-    let func = new Node('function', [arg], {name, isBuiltIn:true});
+  callee:builtInFuncsTitles _ exp:SuperScript? _ arg:builtInFuncsArg {
+    let func = new Node('function', [arg], {callee, isBuiltIn:true});
     if(!exp) return func;
     else return new Node('operator', [func, exp], {name: '^', operatorType: 'infix'});
   }
 
 // builtInFuncsTitles = n:$multi_char_name &{ return options.builtInFunctions.indexOf(n) > -1 } { return text(); }
-builtInFuncsTitles = // the same as options.builtInFunctions
-  "sinh"/ "cosh"/ "tanh"/ "sech"/  "csch"/  "coth"/  
-  "arsinh"/ "arcosh"/ "artanh"/ "arsech"/ "arcsch"/ "arcoth"/
-  "sin"/ "cos"/ "tan"/ "sec"/ "csc"/  "cot"/
-  "asin"/ "acos"/ "atan"/ "asec"/ "acsc"/  "acot"/
-  "arcsin"/ "arccos"/ "arctan"/ "arcsec"/  "arccsc"/ "arccot"/ 
-  "ln"/ "log"/ "exp"/ "floor"/ "ceil"/ "round"/ "random" / "sum"
+builtInFuncsTitles = ( // the same as options.builtInFunctions
+    "sinh"/ "cosh"/ "tanh"/ "sech"/  "csch"/  "coth"/  
+    "arsinh"/ "arcosh"/ "artanh"/ "arsech"/ "arcsch"/ "arcoth"/
+    "sin"/ "cos"/ "tan"/ "sec"/ "csc"/  "cot"/
+    "asin"/ "acos"/ "atan"/ "asec"/ "acsc"/  "acot"/
+    "arcsin"/ "arccos"/ "arctan"/ "arcsec"/  "arccsc"/ "arccot"/ 
+    "ln"/ "log"/ "exp"/ "floor"/ "ceil"/ "round"/ "random" / "sum"
+  ) {
+	  return new Node('id', null, { name: text() });
+  }
 
 builtInFuncsArg = 
   (
@@ -140,9 +144,10 @@ builtInFuncsArg =
     }
   ) /* reset of the factors */ / BlockpParentheses / BlockVBars / Functions
 
+// TODO: 2axsin3y
 Function = 
-  name:$_name &{ return options.functions.indexOf(name)>-1; } _ parentheses:BlockpParentheses 
-  { return new Node('function', parentheses, { name }); }
+  callee:Name &{ return options.functions.indexOf(name)>-1; } _ parentheses:BlockpParentheses 
+  { return new Node('function', parentheses, { callee }); }
 
 BlockpParentheses =
   "(" args:Delimiter /* returns Expression id no delimiter found */ ")" { return new Node('block', [args], {name: '()'}); }
@@ -184,11 +189,13 @@ Name "name" = _name {
   return new Node('id', null, {name})
 }
 
-_name = multi_char_name  / char
+_name = &{ return !options.singleCharName } multi_char_name / char
 
-multi_char_name = &{ return !options.singleCharName } (char/"_")+[0-9]* {
-    return text();
-  }
+multi_char_name = (char/"_")+[0-9]*
+
+// multi_char_name_no_number = &{ return !options.singleCharName } (char/"_")+[0-9]* {
+//     return text();
+//   }
 
 ///// primitives
 

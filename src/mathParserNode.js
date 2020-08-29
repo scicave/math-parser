@@ -55,7 +55,7 @@ Node.prototype.types.operators = {
 };
 
 Node.prototype.types.blocks = [
-  "()", "{}", "[]", "()", "{}", "[]", "||",
+  "[]", "()", "{}", "[]", "||",
 ];
 
 
