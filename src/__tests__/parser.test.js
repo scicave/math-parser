@@ -135,8 +135,45 @@ describe('parse basic arithmetics', () => {
 
 });
 
-describe('tests singleCharName=true', () => {
+describe.only('tests singleCharName=true', () => {
 
+  test("member expression: p1.x", ()=>{
+    expect(parse('p1.y')).toHaveStructure({
+      type: 'member expression', 
+      args: [
+        {type: 'id', name: 'p1'},
+        {type: 'id', name: 'y'},
+      ]
+    });
+  });
+
+  test("member expression: 1+ p1.x^5!", ()=>{
+    expect(parse('1+ p1.x^5!')).toHaveStructure({
+      type: 'operator', operatorType: 'infix', name: '+',
+      args: [
+        {type: 'number', value: 1},
+        {
+          type: 'operator', operatorType: 'infix', name: '^',
+          args: [
+            {
+              type: 'member expression', 
+              args: [
+                {type: 'id', name: 'p1'},
+                {type: 'id', name: 'y'},
+              ]
+            },
+            {
+              type: 'operator', operatorType: 'postfix', name: '!',
+              args: [
+                {type: 'number', value: 2},
+              ]
+            }
+          ]
+        }
+      ]
+    });
+  });
+  
   describe("tests intellicense, automult", () => {
 
     test('tests: 2xsiny', () => {
