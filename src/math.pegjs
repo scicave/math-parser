@@ -221,7 +221,7 @@ NameNME = _name {
   return createNode('id', null, {name})
 }
 
-_name = &{ return !options.singleCharName } multiCharName / char
+_name = &{ return !options.singleCharName } multiCharName / char[0-9]*
 
 multiCharName "multi char name"= (char/"_")+[0-9]*
 
