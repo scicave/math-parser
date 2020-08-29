@@ -8,9 +8,25 @@ expect.extend({
    * @param {Obj} struct
    */
   toHaveStructure(node, struct) {
-    // struct number{1}
     function failed(msg) {
-      return { message: () => `${msg}\n\n====================== node ======================\n${JSON.stringify(node, null, 2)}\n\n====================== expected ======================${JSON.stringify(struct, null, 2)}`, pass: false };
+      function simplify(o){
+        JSON.stringify(o);
+        if(typeof o !== 'object') return o;
+        let r = {};
+        let ignore = ['match', 'operatorType'];
+        for(let p in o){
+          if(ignore.indexOf(p) === -1 && o.hasOwnProperty(p)){
+            r[p] = simplify(o[p]);
+          }
+        }
+        return r;
+      }
+      let simple_node = simplify(node);
+      let simple_struct = simplify(struct);
+      return {
+        message: () => `${msg}\n====================== node ======================\n${JSON.stringify(simple_node, null, 2)}\n====================== expected ======================\n${JSON.stringify(simple_struct, null, 2)}`,
+        pass: false,
+      };
     }
 
     if (!(node instanceof parser.Node)) {
@@ -135,20 +151,20 @@ describe('parse basic arithmetics', () => {
 
 });
 
-describe.only('tests singleCharName=true', () => {
+describe('tests singleCharName=true', () => {
 
   test("member expression: p1.x", ()=>{
-    expect(parse('p1.y')).toHaveStructure({
+    expect(parse('p1.x')).toHaveStructure({
       type: 'member expression', 
       args: [
         {type: 'id', name: 'p1'},
-        {type: 'id', name: 'y'},
+        {type: 'id', name: 'x'},
       ]
     });
   });
 
-  test("member expression: 1+ p1.x^5!", ()=>{
-    expect(parse('1+ p1.x^5!')).toHaveStructure({
+  test("member expression: 1+ p1.x^2!", ()=>{
+    expect(parse('1+ p1.x^2!')).toHaveStructure({
       type: 'operator', operatorType: 'infix', name: '+',
       args: [
         {type: 'number', value: 1},
@@ -159,7 +175,7 @@ describe.only('tests singleCharName=true', () => {
               type: 'member expression', 
               args: [
                 {type: 'id', name: 'p1'},
-                {type: 'id', name: 'y'},
+                {type: 'id', name: 'x'},
               ]
             },
             {
