@@ -15,7 +15,7 @@
   }, options); /// override the default options
 }
 
-Expression "expression" = _ Operation11 _
+Expression "expression" = _ expr:Operation11 _ { return expr; }
 
 Operation11 "operation or factor" = 
   head:Operation12 tail:(_ "=" _ Operation12)* _{
