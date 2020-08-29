@@ -93,8 +93,8 @@ function parse(math, options = {}) {
 
 describe('parse basic arithmetics', () => {
 
-  test("1+2^1.2 / x * -5.236 --2", () => {
-    expect(parse('1+2^1.2 / x * -5.236 --2')).toHaveStructure({
+  test("1+2^1.2 / x ! * -5.236 --2", () => {
+    expect(parse('1+2^1.2 / x ! * -5.236 --2')).toHaveStructure({
       type: 'operator', name: "-",
       "args": [
         {
@@ -114,7 +114,13 @@ describe('parse basic arithmetics', () => {
                         { value: 1.2, type: "number" },
                       ]
                     },
-                    { name: "x", type: "id", }
+                    {
+                      type: 'operator',
+                      operatorType: 'postfix',
+                      args: [
+                        { name: "x", type: "id", }
+                      ]
+                    }
                   ]
                 },
                 { value: -5.236, type: "number" },
@@ -208,91 +214,94 @@ describe('tests singleCharName=false', () => {
       });
     });
 
-    test('tests: 2axsin3y', () => {
-      expect(parse('2axsin3y', parserOptions)).toHaveStructure({
-        type: 'automult',
-        args: [
-          {
-            type: 'automult',
-            args: [
-              { value: 2, type: 'number', },
-              { name: 'ax', type: 'id', },
-            ]
-          }, {
-            type: 'function',
-            isBuiltIn: true,
-            callee: {type: 'id', name: 'sin'},
-            args: [
-              {
-                type: 'automult',
-                args: [
-                  { value: 3, type: 'number', },
-                  { name: 'y', type: 'id', },
-                ]
-              }
-            ]
-          }
-        ]
-      });
-    });
-
-    test('tests: 2 ax   sin3y', () => {
-      expect(parse('2 ax   sin3y', parserOptions)).toHaveStructure({
-        type: 'automult',
-        args: [
-          {
-            type: 'automult',
-            args: [
-              { value: 2, type: 'number', },
-              { name: 'ax', type: 'id', },
-            ]
-          },
-          {
-            type: 'function',
-            isBuiltIn: true,
-            callee: {type: 'id', name: 'sin'},
-            args: [
-              {
-                type: 'automult',
-                args: [
-                  { value: 3, type: 'number', },
-                  { name: 'y', type: 'id', },
-                ]
-              }
-            ]
-          }
-        ]
-      });
-    });
-
     test('tests: sinxcosx', () => {
       expect(parse('sinxcosx', parserOptions)).toHaveStructure({
         type: 'id', name: 'sinxcosx'
       });
     });
 
-    test('tests: xsin2z', () => {
-      expect(parse('xsin2z', parserOptions)).toHaveStructure({
-        type: 'automult',
-        args: [
-          { type: 'id', name: 'x' },
-          {
-            type: 'function',
-            isBuiltIn: true,
-            callee: {type: 'id', name: 'sin'},
-            args: [
-              {
-                type: 'automult',
-                args: [
-                  { type: 'number', value: 2 },
-                  { type: 'id', name: 'z' },
-                ]
-              }
-            ]
-          }
-        ]
-      });
-    });
+    //#region TODO: next release
+
+    // test('tests: 2 ax   sin3y', () => {
+    //   expect(parse('2 ax   sin3y', parserOptions)).toHaveStructure({
+    //     type: 'automult',
+    //     args: [
+    //       {
+    //         type: 'automult',
+    //         args: [
+    //           { value: 2, type: 'number', },
+    //           { name: 'ax', type: 'id', },
+    //         ]
+    //       },
+    //       {
+    //         type: 'function',
+    //         isBuiltIn: true,
+    //         callee: {type: 'id', name: 'sin'},
+    //         args: [
+    //           {
+    //             type: 'automult',
+    //             args: [
+    //               { value: 3, type: 'number', },
+    //               { name: 'y', type: 'id', },
+    //             ]
+    //           }
+    //         ]
+    //       }
+    //     ]
+    //   });
+    // });
+
+    // test('tests: xsin2z', () => {
+    //   expect(parse('xsin2z', parserOptions)).toHaveStructure({
+    //     type: 'automult',
+    //     args: [
+    //       { type: 'id', name: 'x' },
+    //       {
+    //         type: 'function',
+    //         isBuiltIn: true,
+    //         callee: {type: 'id', name: 'sin'},
+    //         args: [
+    //           {
+    //             type: 'automult',
+    //             args: [
+    //               { type: 'number', value: 2 },
+    //               { type: 'id', name: 'z' },
+    //             ]
+    //           }
+    //         ]
+    //       }
+    //     ]
+    //   });
+    // });
+
+
+    // test('tests: 2axsin3y', () => {
+    //   expect(parse('2axsin3y', parserOptions)).toHaveStructure({
+    //     type: 'automult',
+    //     args: [
+    //       {
+    //         type: 'automult',
+    //         args: [
+    //           { value: 2, type: 'number', },
+    //           { name: 'ax', type: 'id', },
+    //         ]
+    //       }, {
+    //         type: 'function',
+    //         isBuiltIn: true,
+    //         callee: {type: 'id', name: 'sin'},
+    //         args: [
+    //           {
+    //             type: 'automult',
+    //             args: [
+    //               { value: 3, type: 'number', },
+    //               { name: 'y', type: 'id', },
+    //             ]
+    //           }
+    //         ]
+    //       }
+    //     ]
+    //   });
+    // });
 
     // test('tests: sin 2 xa sd cos3x', () => {
     //   expect(()=>parse('sin 2 xa sd cos3x', parserOptions)).toThrow(parser.SyntaxError);
@@ -301,6 +310,8 @@ describe('tests singleCharName=false', () => {
     // test('tests: sin 2 xasdcos3x + 1', () => {
     //   expect(()=>parse('sin 2 xasdcos3x + 1', parserOptions)).toThrow(parser.SyntaxError);
     // });
+    
+    //#endregion
 
   });
 

@@ -56,6 +56,7 @@ Node.prototype.types = {
   AUTO_MULT: "automult",
   OPERATOR:  'operator',
   DELIMITER: 'delimiter',
+  MEMBER_EXPRESSION: 'member expression',
 };
 
 Node.prototype.types.values = Object.values(Node.prototype.types);
