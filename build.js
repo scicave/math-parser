@@ -33,7 +33,7 @@ let replacements = [
 let grammarFiles = [
     {
         input: './src/math.pegjs',
-        output: './dist/index.js',
+        output: './lib/index.js',
         dependencies: {
             Node: './mathParserNode.js'
         },
