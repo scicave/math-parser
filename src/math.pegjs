@@ -15,7 +15,7 @@
   }, options); /// override the default options
 }
 
-Expression "expression" = Operation11
+Expression "expression" = _ Operation11 _
 
 Operation11 "operation or factor" = 
   head:Operation12 tail:(_ "=" _ Operation12)* _{
@@ -146,7 +146,7 @@ builtInFuncsArg =
 
 // TODO: 2axsin3y
 Function = 
-  callee:Name &{ return options.functions.indexOf(name)>-1; } _ parentheses:BlockpParentheses 
+  callee:Name &{ return options.functions.indexOf(callee.name)>-1; } _ parentheses:BlockpParentheses 
   { return new Node('function', parentheses, { callee }); }
 
 BlockpParentheses =
