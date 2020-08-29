@@ -35,9 +35,6 @@ expect.extend({
 
       if (s.args && n.args) {
         if (s.args.length !== n.args.length) {
-          let _n = { ...n }, _s = { ...s };
-          delete _n.args; delete _s.args;
-          _n = JSON.stringify(_n); _s = JSON.stringify(_s);
           return failed(`${sPath} in struct and ${nPath} in node args has different lengths`, node);
         }
         for (let i = 0; i < s.args.length; i++) {
@@ -45,9 +42,6 @@ expect.extend({
           if (c) return c; // here a problem is found
         }
       } else if (s.args || n.args) {
-        let _n = { ...n }, _s = { ...s };
-        delete _n.args; delete _s.args;
-        _n = JSON.stringify(_n); _s = JSON.stringify(_s);
         if (s.args) {
           return failed(`${sPath} in struct has args but ${nPath} in node doesn't`, node);
         } else {
@@ -157,7 +151,7 @@ describe('tests singleCharName=true', () => {
           },
           {
             type: 'function',
-            name: 'sin',
+            callee: {type: 'id', name: 'sin'},
             isBuiltIn: true,
             args: [
               {
@@ -176,7 +170,7 @@ describe('tests singleCharName=true', () => {
         "args": [
           {
             type: 'function',
-            name: 'sin',
+            callee: {type: 'id', name: 'sin'},
             isBuiltIn: true,
             args: [
               { type: 'id', name: 'x' }
@@ -184,7 +178,7 @@ describe('tests singleCharName=true', () => {
           },
           {
             type: 'function',
-            name: 'cos',
+            callee: {type: 'id', name: 'cos'},
             isBuiltIn: true,
             args: [
               { type: 'id', name: 'x' }
@@ -202,7 +196,7 @@ describe('tests singleCharName=false', () => {
 
   let parserOptions = { singleCharName: false };
 
-  describe.only("tests intellicense, automult", () => {
+  describe("tests intellicense, automult", () => {
 
     test('tests: 2axsiny', () => {
       expect(parse('2axsiny', parserOptions)).toHaveStructure({
@@ -214,7 +208,7 @@ describe('tests singleCharName=false', () => {
       });
     });
 
-    test.only('tests: 2axsin3y', () => {
+    test('tests: 2axsin3y', () => {
       expect(parse('2axsin3y', parserOptions)).toHaveStructure({
         type: 'automult',
         args: [
@@ -227,7 +221,7 @@ describe('tests singleCharName=false', () => {
           }, {
             type: 'function',
             isBuiltIn: true,
-            name: 'sin',
+            callee: {type: 'id', name: 'sin'},
             args: [
               {
                 type: 'automult',
@@ -242,7 +236,7 @@ describe('tests singleCharName=false', () => {
       });
     });
 
-    test.only('tests: 2 ax   sin3y', () => {
+    test('tests: 2 ax   sin3y', () => {
       expect(parse('2 ax   sin3y', parserOptions)).toHaveStructure({
         type: 'automult',
         args: [
@@ -256,7 +250,7 @@ describe('tests singleCharName=false', () => {
           {
             type: 'function',
             isBuiltIn: true,
-            name: 'sin',
+            callee: {type: 'id', name: 'sin'},
             args: [
               {
                 type: 'automult',
@@ -285,7 +279,7 @@ describe('tests singleCharName=false', () => {
           {
             type: 'function',
             isBuiltIn: true,
-            name: 'sin',
+            callee: {type: 'id', name: 'sin'},
             args: [
               {
                 type: 'automult',
@@ -301,11 +295,11 @@ describe('tests singleCharName=false', () => {
     });
 
     test('tests: sin 2 xa sd cos3x', () => {
-      expect(parse('sin 2 xa sd cos3x', parserOptions)).toThrow(parser.SyntaxError);
+      expect(()=>parse('sin 2 xa sd cos3x', parserOptions)).toThrow(parser.SyntaxError);
     });
 
     test('tests: sin 2 xasdcos3x + 1', () => {
-      expect(parse('sin 2 xasdcos3x + 1', parserOptions)).toThrow(parser.SyntaxError);
+      expect(()=>parse('sin 2 xasdcos3x + 1', parserOptions)).toThrow(parser.SyntaxError);
     });
 
   });

@@ -10,6 +10,22 @@ class Node {
 
     this.type = type;
     this.args = args;
+
+    switch(type){
+      case "function":
+        {
+          this.check = function(props){
+            for(let p in props){
+              if(p === 'type'){ if(props.type !== 'function') return false; }
+              else if(p === 'callee'){ if(!this.callee.check(props.callee)) return false; }
+              else if(p !== "args"   && props[p] !== this[p]){ return false; }  
+            }
+            return true;
+          };
+        }
+        break;
+    }
+
   }
 
   checkType(t){

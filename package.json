@@ -26,6 +26,14 @@
       "ignore": [
         "./src/__tests__"
       ]
+    },
+    "test": {
+      "patterns": [
+        "./src/__tests__"
+      ],
+      "extensions": [
+        "js"
+      ]
     }
   },
   "scripts": {
