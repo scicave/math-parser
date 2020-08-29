@@ -1,3 +1,9 @@
+// TODO: add option builtInVaraibles to use in case of single char name to parse pi and phi
+// TODO: add option varaibles to use in case of single char name to enable exclude some multi-char name from this options
+// TODO: 1 + p1.func()   ::: anble some functions to be without argumets
+// TODO: 1 + p1.func(1)   ::: check if p1.func is function id or varaible in case of automult
+// TODO: 1 + p1.func(2)!^2   ::: solve the error
+
 {
   options = Object.assign({
     autoMult: true,

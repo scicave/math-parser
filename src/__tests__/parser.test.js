@@ -370,3 +370,4 @@ describe('tests singleCharName=false', () => {
 
 });
 
+// TODO: add tests for functions option
