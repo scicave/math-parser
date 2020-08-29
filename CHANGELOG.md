@@ -1,3 +1,7 @@
+# v2.1.1
+Summary of Changes:
+- update the README file
+
 # v2.1.0
 Summary of Changes:
 - Fix factorial postfix operator "!"
