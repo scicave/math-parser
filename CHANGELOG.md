@@ -1,8 +1,15 @@
+# v2.0.0
+Summary of Changes:
+- All the changes after v1.0.0 - the last complete version - are ready
+- Update the readme file
+
 # v2.0.0-0
+Becuase that changes after the last complete version are major, making the next version major is the best thing.
+
 Summary of Changes:
 - Fix ReferenceError: identifier "name" is not defined.
 Summary of Changes (dev):
-- Remove .toThrow tests from src/__tests__/parser.test.js
+- Remove .toThrow tests from src/\_\_tests\_\_/parser.test.js
 
 # v1.1.0-0
 Summary of Changes:
