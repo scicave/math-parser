@@ -294,13 +294,13 @@ describe('tests singleCharName=false', () => {
       });
     });
 
-    test('tests: sin 2 xa sd cos3x', () => {
-      expect(()=>parse('sin 2 xa sd cos3x', parserOptions)).toThrow(parser.SyntaxError);
-    });
+    // test('tests: sin 2 xa sd cos3x', () => {
+    //   expect(()=>parse('sin 2 xa sd cos3x', parserOptions)).toThrow(parser.SyntaxError);
+    // });
 
-    test('tests: sin 2 xasdcos3x + 1', () => {
-      expect(()=>parse('sin 2 xasdcos3x + 1', parserOptions)).toThrow(parser.SyntaxError);
-    });
+    // test('tests: sin 2 xasdcos3x + 1', () => {
+    //   expect(()=>parse('sin 2 xasdcos3x + 1', parserOptions)).toThrow(parser.SyntaxError);
+    // });
 
   });
 
