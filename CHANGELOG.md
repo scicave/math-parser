@@ -1,3 +1,13 @@
+# v2.1.0
+Summary of Changes:
+- Fix factorial postfix operator "!"
+- Enable single char to be a char suffixed by integer such as "p1, x0, x1, y123"
+- Add "member expressions" Node and parse something like " 1+ p1.x"
+Summary of Changes (dev):
+- Add tests for member expression
+- Commenting out some tests for future releases, insha'allah!
+- When a test fail: the loged objects (node and struct) are simplified first to focus on some properties
+
 # v2.0.0
 Summary of Changes:
 - All the changes after v1.0.0 - the last complete version - are ready
