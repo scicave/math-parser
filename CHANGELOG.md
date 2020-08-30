@@ -1,3 +1,7 @@
+# v2.1.2
+Summary of Changes:
+- Fix operators ^ and ! to parse some expression like: "5^2x!".
+
 # v2.1.1
 Summary of Changes:
 - update the README file

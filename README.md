@@ -26,7 +26,7 @@ console.log(mathParser.parse('xlong_var_name', { singleCharName: false, }));
 
 ## Options
 
-- autoMult: boolean
+- _autoMult_: boolean
 
 Default: `true`
 
@@ -36,7 +36,7 @@ To perform multiplication in these cases:
 3. sinx(5y)
 > Notice: sinxcosx when singleCharName is `false` will be variable name
 
-- singleCharName: boolean
+- _singleCharName_: boolean
 
 Default: `true`
 
@@ -44,16 +44,25 @@ Maths conventionally works with single char named variables and constants, but i
 For example if you want to use "pi" or "phi", etc, you have to set this to `false`.  
 
 
-- memberExpressionAllowed: boolean
+- _memberExpressionAllowed_: boolean
 
 Default: `true`
 
 For example: `p.x` or `point.x`.
 
 
-- functions: [string]
+- _functions_: [string]
 
 When autoMult is `true`, some expression like "f(x)" will be considered as multiplication, inorder to parse it as function with `callee` as instence of `mathParser.Node` has `type` of "id" and `name` equals "f".
+
+
+## Unsure about
+In these confusing cases, you can handle the parsed expression to transform to what you want.
+- `5^2x!`
+
+To be `5^(2x!)` or `(5^2)(x!)` or `(5^2x)!`, ...
+
+This parser handles it as `5^(2x!)`.
 
 ## Lisence
 
