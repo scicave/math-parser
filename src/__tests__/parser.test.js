@@ -149,6 +149,27 @@ describe('parse basic arithmetics', () => {
     });
   });
 
+  test("5^2x!", () => {
+    expect(parse('5^2x!')).toHaveStructure({
+      type: 'operator', name: "^",
+      args: [
+        { value: 5, type: "number", },
+        {
+          type: 'automult',
+          args: [
+            { value: 2, type: "number" },
+            {
+              type: 'operator', name: '!',
+              args: [
+                { name: 'x', type: "id" },
+              ]
+            }
+          ]
+        },
+      ]
+    });
+  });
+
 });
 
 describe('tests singleCharName=true', () => {
