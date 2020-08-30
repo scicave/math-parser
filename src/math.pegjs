@@ -1,3 +1,9 @@
+// TODO: add option builtInVaraibles to use in case of single char name to parse pi and phi
+// TODO: add option varaibles to use in case of single char name to enable exclude some multi-char name from this options
+// TODO: 1 + p1.func()   ::: anble some functions to be without argumets
+// TODO: 1 + p1.func(1)   ::: check if p1.func is function id or varaible in case of automult
+// TODO: 1 + p1.func(2)!^2   ::: solve the error
+
 {
   options = Object.assign({
     autoMult: true,
@@ -83,8 +89,16 @@ Operation3 "operation or factor" =
     }, head);
   }
 
-Operation4 "operation or factor" = /// series of multiplication or one "Factor"
-  head:(Operation5) tail:(_ operation5WithoutNumber)* {
+Operation4 "operation or factor" =
+  head:Operation5 tail:(_ "^" _ Operation5)* {
+        // left to right
+    return tail.reduce(function(result, element) {
+      return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
+    }, head);
+  }
+
+Operation5 "operation or factor" = /// series of multiplication or one "Factor"
+  head:(Factor) tail:(_ factorWithoutNumber)* {
     if(options.autoMult){
         // left to right
       return tail.reduce(function(result, element) {
@@ -93,30 +107,18 @@ Operation4 "operation or factor" = /// series of multiplication or one "Factor"
     }
     error('invalid syntax, hint: missing * sign');
   }
-  
-Operation5 "operation or factor" =
-  base:Factor _ exp:SuperScript?{
-    if (exp) base = createNode('operator', [base, exp], {name:'^', operatorType: 'infix'});
-    return base;
-  }
 
-operation5WithoutNumber "operation or factor" =
-  base:factorWithoutNumber _ exp:SuperScript?{
-    if (exp) base = createNode('operator', [base, exp], {name:'^', operatorType: 'infix'});
-    return base;
-  }
-
-Factor = base:_factor _ fac:factorial? {
+Factor
+  = factorWithoutNumber / base:Number _ fac:factorial? {
   if (fac) base = createNode('operator', [base], {name: '!', operatorType: 'postfix'});
   return base;
 }
 
-_factor
-  = factorWithoutNumber / Number
-
 factorWithoutNumber =
-  Functions / BlockpParentheses / BlockVBars /
-  Name
+  base:( Functions / BlockpParentheses / BlockVBars / Name ) _ fac:factorial? {
+  if (fac) base = createNode('operator', [base], {name: '!', operatorType: 'postfix'});
+  return base;
+}
 
 // simpleFactor =
 //   Number/ BlockVBars /* || === abs() */ /
@@ -186,7 +188,7 @@ BlockVBars =
 
 ////// main factor, tokens
 
-SuperScript "superscript"= "^" _ arg:Factor { return arg; }
+SuperScript "superscript" = "^" _ arg:Factor { return arg; }
 
 ///////// numbers
 
