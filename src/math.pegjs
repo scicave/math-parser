@@ -1,8 +1,6 @@
 // TODO: add option builtInVaraibles to use in case of single char name to parse pi and phi
 // TODO: add option varaibles to use in case of single char name to enable exclude some multi-char name from this options
-// TODO: 1 + p1.func()   ::: anble some functions to be without argumets
-// TODO: 1 + p1.func(1)   ::: check if p1.func is function id or varaible in case of automult
-// TODO: 1 + p1.func(2)!^2   ::: solve the error
+// TODO: p1.func(x), parse as member expression has arg[1] as id, and arg[2] as function,
 
 {
   options = Object.assign({
@@ -10,6 +8,7 @@
     functions: [],
     singleCharName: true,
     memberExpressionAllowed: true,
+    strict: false,
     builtInFunctions: [
       "sinh", "cosh", "tanh", "sech",  "csch",  "coth",  
       "arsinh", "arcosh", "artanh", "arsech",  "arcsch", "arcoth",
@@ -89,16 +88,8 @@ Operation3 "operation or factor" =
     }, head);
   }
 
-Operation4 "operation or factor" =
-  head:Operation5 tail:(_ "^" _ Operation5)* {
-        // left to right
-    return tail.reduce(function(result, element) {
-      return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
-    }, head);
-  }
-
-Operation5 "operation or factor" = /// series of multiplication or one "Factor"
-  head:(Factor) tail:(_ factorWithoutNumber)* {
+Operation4 "operation or factor" = /// series of multiplication or one "Factor"
+  head:(Exp) tail:(_ ExpBNN)* {
     if(options.autoMult){
         // left to right
       return tail.reduce(function(result, element) {
@@ -108,26 +99,41 @@ Operation5 "operation or factor" = /// series of multiplication or one "Factor"
     error('invalid syntax, hint: missing * sign');
   }
 
+
+Exp "operation or factor" =
+  head:Factor tail:(_ "^" _ Factor)* {
+    // left to right
+    return tail.reduce(function(result, element) {
+      return createNode('operator' , [result, element[3]], { name: element[1], operatorType: 'infix' });
+    }, head);
+  }
+
+// Exp "B_ase is N_ot N_umber: BNN"
+ExpBNN = 
+  head:factorWithoutNumber tail:(_ "^" _ Factor)* {
+    // left to right
+    return tail.reduce(function(result, element) {
+      return createNode('operator' , [result, element[3]], { name: element[1], operatorType: 'infix' });
+    }, head);
+  }
+
 Factor
   = factorWithoutNumber / base:Number _ fac:factorial? {
-  if (fac) base = createNode('operator', [base], {name: '!', operatorType: 'postfix'});
-  return base;
-}
+    if (fac) base = createNode('operator', [base], {name: '!', operatorType: 'postfix'});
+    return base;
+  }
 
 factorWithoutNumber =
-  base:( Functions / BlockpParentheses / BlockVBars / Name ) _ fac:factorial? {
-  if (fac) base = createNode('operator', [base], {name: '!', operatorType: 'postfix'});
-  return base;
-}
-
-// simpleFactor =
-//   Number/ BlockVBars /* || === abs() */ /
-//   Name
+  base:(MemberExpression / Functions / BlockpParentheses / BlockVBars / NameNME) _ fac:factorial? {
+    if (fac) base = createNode('operator', [base], {name: '!', operatorType: 'postfix'});
+    return base;
+  }
 
 Delimiter
-  = head:Expression tail:(_ "," _ (Expression))* {
+  // there is spaces around expressions already no need for _ rule
+  = head:Expression tail:("," Expression)* {
       if (tail.length){
-        return createNode('delimiter', [head].concat(tail.map(a => a[3])), {name: ','});
+        return createNode('delimiter', [head].concat(tail.map(a => a[1])), {name: ','});
       }
       return head;
     }
@@ -135,26 +141,24 @@ Delimiter
 Functions "functions" =
   BuiltInFunctions / Function
 
-FunctionsNME = BuiltInFunctions / FunctionNME
-
 BuiltInFunctions =
-  callee:builtInFuncsTitles _ exp:SuperScript? _ arg:builtInFuncsArg {
-    let func = createNode('function', [arg], {callee, isBuiltIn:true});
+  name:builtInFuncsTitles _ exp:SuperScript? _ arg:builtInFuncsArg {
+    let func = createNode('function', [arg], {name, isBuiltIn:true});
     if(!exp) return func;
     else return createNode('operator', [func, exp], {name: '^', operatorType: 'infix'});
   }
 
 // builtInFuncsTitles = 
 builtInFuncsTitles =
-  &{ return options.singleCharName } ( // the same as options.builtInFunctions
+  &{ return options.singleCharName } n:( // the same as options.builtInFunctions
     "sinh"/ "cosh"/ "tanh"/ "sech"/  "csch"/  "coth"/  
     "arsinh"/ "arcosh"/ "artanh"/ "arsech"/ "arcsch"/ "arcoth"/
     "sin"/ "cos"/ "tan"/ "sec"/ "csc"/  "cot"/
     "asin"/ "acos"/ "atan"/ "asec"/ "acsc"/  "acot"/
     "arcsin"/ "arccos"/ "arctan"/ "arcsec"/  "arccsc"/ "arccot"/ 
     "ln"/ "log"/ "exp"/ "floor"/ "ceil"/ "round"/ "random" / "sum"
-  ) { return createNode('id', null, { name: text() }); } /
-  n:$multiCharName &{ return options.builtInFunctions.indexOf(n) > -1 } { return createNode('id', null, { name: text() });; }
+  ) { return n; } /
+  n:$multiCharName &{ return options.builtInFunctions.indexOf(n) > -1 } { return n; }
 
 builtInFuncsArg = 
   (
@@ -172,16 +176,26 @@ builtInFuncsArg =
 
 // TODO: 2axsin3y
 Function = 
-  callee:Name &{ return options.functions.indexOf(callee.name)>-1; } _ parentheses:BlockpParentheses 
-  { return createNode('function', parentheses, { callee }); }
+  // no need for FnNameNME
+  name:$NameNME _ parentheses:(BlockpParentheses / VoidBlockpParentheses) &{
+    if(!parentheses.args /** VoidBlockpParentheses */ && !options.strict) {
+      return true;
+    }
+    return options.functions.indexOf(name)>-1;
+  } { return createNode('function', [parentheses], { name }); }
+  
 
-// not member expression
-FunctionNME =
-  callee:NameNME &{ return options.functions.indexOf(callee.name)>-1; } _ parentheses:BlockpParentheses 
-  { return createNode('function', parentheses, { callee }); }
+MultiCharFunction =
+  // for member expressions
+  name:$MultiCharNameNME _ parentheses:(BlockpParentheses / VoidBlockpParentheses) {
+    return createNode('function', [parentheses], { name });
+  }
 
 BlockpParentheses =
   "(" args:Delimiter /* returns Expression id no delimiter found */ ")" { return createNode('block', [args], {name: '()'}); }
+
+VoidBlockpParentheses =
+  "(" _ ")" { return createNode('block', null, {name: '()'}); }
 
 BlockVBars =
   "|" expr:Expression "|" { return createNode('block', [expr], {name: '||'}) }
@@ -212,17 +226,26 @@ sign
 
 //////////////
 
-Name "name" = m:MemberExpression {
-  if(!options.memberExpressionAllowed) error('member expression is no allowed');
-  return m;
- } / NameNME
+Name "name" = MemberExpressionName / NameNME
 
 // not member expression
+
 NameNME = _name {
   let name = text();
-  if(options.builtInFunctions.indexOf(name) > -1 || options.functions.indexOf(name) > -1){
+
+  //#region checking if function id is used as variable id
+  let er = false;
+  er = options.builtInFunctions.indexOf(name) > -1 || options.functions.indexOf(name) > -1;
+  if(er && options.strict){
     error(`the function "${name}" it used with no arguments! can't use the function a variable!`);
   }
+  //#endregion
+
+  return createNode('id', null, {name});
+}
+
+MultiCharNameNME = multiCharName {
+  let name = text();
   return createNode('id', null, {name})
 }
 
@@ -230,9 +253,30 @@ _name = &{ return !options.singleCharName } multiCharName / char[0-9]*
 
 multiCharName "multi char name"= (char/"_")+[0-9]*
 
-MemberExpression "member expression" =
-  head:memberArg _ "." chain:( _ memberArg _ ".")* _ tail:NameNME{
-    // left to right
+MemberExpression =
+  // left to right
+  head:memberFirstArg _ "." chain:( _ memberArg _ ".")* _ tail:memberArg {
+    if(!options.memberExpressionAllowed) error(`member expression syntax is not allowed`);
+    let arg1 = chain.reduce(function(result, element) {
+      return createNode('member expression' , [result, element[1]]);
+    }, head);
+    return createNode('member expression' , [arg1, tail]);
+  }
+
+MemberExpressionName "member expression end with name" =
+  // left to right
+  head:memberFirstArg _ "." chain:( _ memberArg _ ".")* _ tail:MultiCharNameNME {
+    if(!options.memberExpressionAllowed) error(`member expression syntax is not allowed`);
+    let arg1 = chain.reduce(function(result, element) {
+      return createNode('member expression' , [result, element[1]]);
+    }, head);
+    return createNode('member expression' , [arg1, tail]);
+  }
+
+MemberExpressionFunction "member expression end with function" =
+  // left to right
+  head:memberFirstArg _ "." chain:( _ memberArg _ ".")* _ tail:MultiCharFunction {
+    if(!options.memberExpressionAllowed) error(`member expression syntax is not allowed`);
     let arg1 = chain.reduce(function(result, element) {
       return createNode('member expression' , [result, element[1]]);
     }, head);
@@ -240,7 +284,9 @@ MemberExpression "member expression" =
   }
 
 // not member expression
-memberArg = FunctionsNME / NameNME 
+// no need for FunctionsNME
+memberFirstArg = Function / NameNME
+memberArg = MultiCharFunction / MultiCharNameNME 
 
 ///// primitives
 

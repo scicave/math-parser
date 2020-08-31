@@ -14,35 +14,13 @@
     "url": "https://github.com/scicave/math-parser/issues"
   },
   "homepage": "https://github.com/scicave/math-parser#readme",
-  "watch": {
-    "buildtest": {
-      "patterns": [
-        "./src"
-      ],
-      "extensions": [
-        "pegjs",
-        "js"
-      ],
-      "ignore": [
-        "./src/__tests__"
-      ]
-    },
-    "test": {
-      "patterns": [
-        "./src/__tests__"
-      ],
-      "extensions": [
-        "js"
-      ]
-    }
-  },
   "scripts": {
-    "build": "node build.js",
-    "watch": "npm-watch",
+    "prebuild": "node ./tools/generate-version-file.js",
+    "build": "node ./tools/build.js",
     "test": "jest",
     "test:watch": "jest --watch",
-    "buildtest": "npm run build && npm run test",
-    "preversion": "npm run buildtest"
+    "preversion": "npm run test",
+    "postversion": "npm run build"
   },
   "keywords": [
     "parser",
@@ -56,7 +34,6 @@
   "license": "MIT",
   "devDependencies": {
     "jest": "^26.4.2",
-    "npm-watch": "^0.7.0",
     "pegjs": "^0.10.0",
     "rimraf": "^3.0.2"
   }
