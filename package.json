@@ -37,7 +37,8 @@
     }
   },
   "scripts": {
-    "build": "node build.js",
+    "prebuild": "node ./tools/generate-version-file.js",
+    "build": "node ./tools/build.js",
     "watch": "npm-watch",
     "test": "jest",
     "test:watch": "jest --watch",
