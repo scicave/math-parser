@@ -1,3 +1,14 @@
+# 31 Aug 2020, v2.2.0
+Summary of changes:
+- Add version property to the exported package, which is now "2.2.0"
+- Add strict to options, see README.md
+- Parse "member expression" such as "p.first_component" and "f(x).someThing.another()" wether or not `options.singleCharName == true`.  
+- When `options.strict == false`, "f()" is function regardless of `options.functions`.
+- When `options.strict == false`, "f + a - sin" is parse with no "Function used as variable" error.
+- Allow functions to be invoke by void parentheses such as "f()";
+- A more intelligent way to handle 
+- Fix operators ^ and ! from the previous release to parse some expression like: "5^2x!" as "(5^2)(x!)".
+
 # v2.1.2
 Summary of Changes:
 - Fix operators ^ and ! to parse some expression like: "5^2x!".
@@ -9,12 +20,12 @@ Summary of Changes:
 # v2.1.0
 Summary of Changes:
 - Fix factorial postfix operator "!"
-- Enable single char to be a char suffixed by integer such as "p1, x0, x1, y123"
+- Enable single char to be a char followed by int num such as "p1, x0, x1, y123"
 - Add "member expressions" Node and parse something like " 1+ p1.x"
 Summary of Changes (dev):
 - Add tests for member expression
-- Commenting out some tests for future releases, insha'allah!
-- When a test fail: the loged objects (node and struct) are simplified first to focus on some properties
+- Commenting out some tests for future releases, insha'Allah!
+- When a test fails: the logged objects (node and struct) are simplified first to focus on some properties
 
 # v2.0.0
 Summary of Changes:
@@ -22,7 +33,7 @@ Summary of Changes:
 - Update the readme file
 
 # v2.0.0-0
-Becuase that changes after the last complete version are major, making the next version major is the best thing.
+Because that changes after the last complete version are major, making the next version major is the best thing.
 
 Summary of Changes:
 - Fix ReferenceError: identifier "name" is not defined.
@@ -32,17 +43,17 @@ Summary of Changes (dev):
 # v1.1.0-0
 Summary of Changes:
 - Node has check and checkType methods:
-  * check: to check for all property except args
-  * checkType: to check the type of Node instance, it can be done using check
+  * `check`: to check for all property except args
+  * `checkType`: to check the type of Node instance, it can be done using check
 - Node has types:
   * number
   * id
   * function
   * block: (), [], {}, ||
   * automult
-  * operator: 
+  * operator:
     - infix: *, /, -, +, ^, &&, ||, ==
     - postfix: !
   * delimiter
-- Do some tests in the parsing proces
+- Do some tests in the parsing process
 - Add some todo comments for next releases
