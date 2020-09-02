@@ -1,6 +1,6 @@
 {
   "name": "@scicave/math-parser",
-  "version": "2.1.2",
+  "version": "2.2.2",
   "description": "A mathematical parser. We mean by mathematical that, e.g., arithmetic operations is considered for example if you pass \"1+2\", the result would by a (add node \"+\") with two children nodes of type number.",
   "main": "lib/index.js",
   "files": [
@@ -17,8 +17,12 @@
   "scripts": {
     "prebuild": "node ./tools/generate-version-file.js",
     "build": "node ./tools/build.js",
-    "test": "jest",
-    "test:watch": "jest --watch",
+    "test": "jest ./src/__tests__/",
+    "buildtest": "npm run build && npm run test",
+    "build:watch": "nodemon --watch src --watch tools --ignore src/__tests__ --exec \"npm run build\"",
+    "buildtest:watch": "nodemon --watch src --watch tools --exec \"npm run buildtest\"",
+    "test:watch": "jest ./src/__tests__/ --watch",
+    "debug": "node debug.js --math \"1 + 2 ^ p.x/ 5!\"",
     "preversion": "npm run test",
     "postversion": "npm run build"
   },
@@ -34,6 +38,7 @@
   "license": "MIT",
   "devDependencies": {
     "jest": "^26.4.2",
+    "nodemon": "^2.0.4",
     "pegjs": "^0.10.0",
     "rimraf": "^3.0.2"
   }
