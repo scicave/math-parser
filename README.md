@@ -9,9 +9,11 @@ A math expressions parser. We mean by mathematical that, e.g., arithmetic operat
 Require, import:
 ```js
 const mathParser = require('@scicave/math-parser'); /*
-  { parse: function(math:string [,options: object]),
-  Node: constructor,
-  SyntaxError: constructor }
+  {
+    parse: function(math:string [,options: object]),
+    Node: constructor,
+    SyntaxError: constructor
+  }
 */
 ```
 Examples: 
@@ -75,7 +77,7 @@ For example:
 
 ## functions: [string]
 
-When autoMult is `true`, some expression like `f(x)` will be considered as multiplication, in order to parse it as a function with `name == "f"`, you can pass `options.functions = ['f']`. Notice that, `strict == flase // by default`, some expression such as `f()`, an id follwed by viid parentheses, will be parse as function whether or not `options.function` includes "f".
+When autoMult is `true`, some expression like `f(x)` will be considered as multiplication, in order to parse it as a function with name = "f", you can pass `options.functions = ['f']`. Notice that, strict = flase, some expression such as `f()`, an id follwed by empty parentheses, will be parsed with type = "function" whether or not `options.function` includes "f".
 
 
 # Unsure about
