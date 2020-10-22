@@ -1,3 +1,7 @@
+# 22 Oct 2020, v2.3.0
+## Add
+  - check for validity of block (including brackets) syntax, e.g., make sure that they are put in the right order and nested correctly, the block has opening and closing charachters.
+
 # 31 Aug 2020, v2.2.0
 Summary of changes:
 - Add version property to the exported package, which is now "2.2.0"
