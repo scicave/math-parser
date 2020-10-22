@@ -7,6 +7,10 @@ class Node {
     if (this.types.values.indexOf(type) === -1) {
       throw new Error('invalid type for the node, "' + type + '"');
     }
+    
+    if (type === this.types.OPERATOR && this.types.operators[props.operatorType].indexOf(props.name) === -1) {
+      throw new Error(`invalid ${props.operatorType} operator "${props.name}"`);
+    }
 
     this.type = type;
     this.args = args;

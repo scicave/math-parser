@@ -34,6 +34,7 @@ let grammarFiles = [
     output: "../lib/index.js",
     dependencies: {
       Node: "./mathParserNode.js",
+      preParse: "./preParse.js",
       version: "./version.js",
     },
   },

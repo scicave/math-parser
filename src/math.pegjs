@@ -3,6 +3,9 @@
 // TODO: p1.func(x), parse as member expression has arg[1] as id, and arg[2] as function,
 
 {
+
+  preParse(input, peg$computeLocation, error);
+
   options = Object.assign({
     autoMult: true,
     functions: [],
@@ -237,7 +240,7 @@ NameNME = _name {
   let er = false;
   er = options.builtInFunctions.indexOf(name) > -1 || options.functions.indexOf(name) > -1;
   if(er && options.strict){
-    error(`the function "${name}" it used with no arguments! can't use the function a variable!`);
+    error('the function "' + name + '", it used with no arguments! can not use the function a variable!');
   }
   //#endregion
 

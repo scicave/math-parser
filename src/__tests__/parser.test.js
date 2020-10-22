@@ -85,9 +85,9 @@ expect.extend({
   },
 });
 
-beforeAll(()=>{
-  cp.execSync('npm run build');
-});
+// beforeAll(()=>{
+//   cp.execSync('npm run build');
+// });
 
 function parse(math, options = {}) {
   return parser.parse(math, options);
