@@ -14,16 +14,21 @@
     "url": "https://github.com/scicave/math-parser/issues"
   },
   "homepage": "https://github.com/scicave/math-parser#readme",
+  "jest": {
+    "moduleNameMapper": {
+      "parser": "<rootDir>/lib/index.js",
+      "preParse": "<rootDir>/lib/preParse.js"
+    }
+  },
   "scripts": {
     "prebuild": "node ./tools/generate-version-file.js",
     "build": "node ./tools/build.js",
-    "test": "jest ./src/__tests__/",
+    "test": "jest ./tests",
     "buildtest": "npm run build && npm run test",
-    "build:watch": "nodemon --watch src --watch tools --ignore src/__tests__ --exec \"npm run build\"",
-    "buildtest:watch": "nodemon --watch src --watch tools --exec \"npm run buildtest\"",
-    "test:watch": "jest ./src/__tests__/ --watch",
-    "debug": "node debug.js --math \"1 + 2 ^ p.x/ 5!\"",
-    "preversion": "npm run test",
+    "start": "nodemon -w src -w tools -e js,pegjs -exec npm run build",
+    "test:watch": "npm t -- --watch",
+    "debug": "node debug.js --math \"1 + 2 ^ p.x/ 5!\" # for vsc built-in debugger",
+    "preversion": "npm t",
     "postversion": "npm run build"
   },
   "keywords": [
