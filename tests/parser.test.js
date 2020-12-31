@@ -115,7 +115,9 @@ function doTest(on, title) {
         let title = t.title || mAsTitle(t);
         let fn = () => {
           if (t.error) 
-            expect(()=>parser.parse(t.math, t.parserOptions)).toThrow(t.errorType);
+            expect(()=>parser.parse(t.math, t.parserOptions)).toThrow(
+              t.errorType === "syntax" ? parser.SyntaxError : r.errorType
+            );
           else
             expect(parser.parse(t.math, t.parserOptions)).toHaveStructure(t.struct);
         };

@@ -33,7 +33,7 @@ let grammarFiles = [
     input: "../src/math.pegjs",
     output: "../lib/index.js",
     dependencies: {
-      Node: "./mathParserNode.js",
+      Node: "./Node.js",
       preParse: "./preParse.js",
       version: "./version.js",
     },

@@ -21,15 +21,14 @@
     }
   },
   "scripts": {
-    "prebuild": "node ./tools/generate-version-file.js",
+    "prod": "node ./tools/generate-version-file.js && npm run build",
     "build": "node ./tools/build.js",
     "test": "jest ./tests",
-    "buildtest": "npm run build && npm run test",
-    "start": "nodemon -w src -w tools -e js,pegjs -exec npm run build",
+    "start": "nodemon -w src -w tools -e js,pegjs --exec npm run build",
     "test:watch": "npm t -- --watch",
     "debug": "node debug.js --math \"1 + 2 ^ p.x/ 5!\" # for vsc built-in debugger",
     "preversion": "npm t",
-    "postversion": "npm run build"
+    "postversion": "npm run prod"
   },
   "keywords": [
     "parser",

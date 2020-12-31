@@ -52,8 +52,9 @@ Node.prototype.types.values = Object.values(Node.prototype.types);
 
 Node.prototype.types.operators = {
   "infix": [
-    "*","/","+","-","!",
-    "^","&&","||", "=="
+    "^","*","/","+","-",
+    "&&","||", "==", ">=",
+    "<=", "<", ">", "="
   ],
   "postfix": [
     "!"

@@ -1,51 +1,34 @@
 class NodeCreator {
+  // take a look at the valid Node types at src/Node.js
   constructor(options) {
     this.setOptions(options);
   }
 
   setOptions(options = {}) {
-    // the same exsits inside the parser `../tex.pegjs`
+    // the same exsits inside the parser `src/tex.pegjs`
     this.options = Object.assign(
       {
         autoMult: true,
         functions: [],
         singleCharName: true,
-
-        // prettier-ignore
-        infixOperators: [
-        '+', '-', '*', '^', '/', 'cdot', "approx", "leq", "geq",
-        "neq", "gg", "ll", "notin", "ni", "in",
-      ],
-
-        postfixOperators: ["!"],
-
-        // prettier-ignore
-        // this is for something like this: \operatorname{floor}
-        operatorNames: // this is for something like this: \operatorname{floor}
-        [
-          "floor", "ceil", "round", "random", "factorial",
-          "sech", "csch", "coth", "abs", "arsinh", "arcosh",
-          "artanh", "arasinh", "aracosh", "aratanh",
-        ],
-
-        // prettier-ignore
-        builtInControlSeq: [
-        "alpha", "Alpha", "beta", "Beta", "gamma", "Gamma", "pi", "Pi", "varpi", "phi", "Phi",
-        "varphi", "mu", "theta", "vartheta", "epsilon", "varepsilon", "upsilon", "Upsilon",
-        "zeta", "eta", "Lambda", "lambda", "kappa", "omega", "Omega", "psi", "Psi",
-        "chi", "tau", "sigma", "Sigma", "varsigma", "rho", "varrho", "Xi", "xi", "nu",
-        "imath", "jmath", "ell", "Re", "Im", "wp", "Nabla", "infty", "aleph", "beth",
-        "gimel", "comicron", "iota", "delta", "thetasym", "omicron", "Delta", "Epsilon",
-        "Zeta", "Eta", "Theta", "Iota", "Kappa", "Mu", "Nu", "Omicron", "Rho", "Tau", "Chi"
-      ],
-
+        memberExpressionAllowed: true,
+        strict: false,
         // prettier-ignore
         builtInFunctions: [
-        "sinh", "cosh", "tanh", 
-        "sin", "cos", "tan", "sec", "csc", "cot",
-        "arcsin", "arccos", "arctan", "arcsec", "arccsc", "arccot",
-        "ln"
-      ],
+          "sinh", "cosh", "tanh", "sech",  "csch",  "coth",  
+          "arsinh", "arcosh", "artanh", "arsech",  "arcsch", "arcoth",
+          "sin", "cos", "tan", "sec",  "csc",  "cot",
+          "asin", "acos", "atan", "asec", "acsc",  "acot",
+          "arcsin", "arccos", "arctan", "arcsec",  "arccsc",  "arccot", 
+          "ln", "log", "exp", "floor", "ceil", "round", "random"
+        ],
+        // prettier-ignore
+        infixOperators: [
+          "^","*","/","+","-",
+          "&&","||", "==", ">=",
+          "<=", "<", ">", "="
+        ],
+        postfixOperators: ["!"],
       },
       options
     ); /// override the default options
@@ -105,6 +88,11 @@ class NodeCreator {
   am(args) {
     if (!Array.isArray(args)) this.invalidArgs("automult");
     return { type: "automult", args };
+  }
+
+  mem(args) {
+    if (!Array.isArray(args)) this.invalidArgs("member expression");
+    return { type: "member expression", args };
   }
 }
 

@@ -127,7 +127,7 @@ Factor
   }
 
 factorWithoutNumber =
-  base:(MemberExpression / Functions / BlockpParentheses / BlockVBars / NameNME) _ fac:factorial? {
+  base:(MemberExpression / Functions / BlockParentheses / BlockVBars / NameNME) _ fac:factorial? {
     if (fac) base = createNode('operator', [base], {name: '!', operatorType: 'postfix'});
     return base;
   }
@@ -145,15 +145,17 @@ Functions "functions" =
   BuiltInFunctions / Function
 
 BuiltInFunctions =
-  name:builtInFuncsTitles _ exp:SuperScript? _ arg:builtInFuncsArg {
-    let func = createNode('function', [arg], {name, isBuiltIn:true});
+  name:builtInFuncsTitles _ exp:SuperScript? _ args:builtInFuncArgs {
+    let func = createNode('function', args, {name, isBuiltIn:true});
     if(!exp) return func;
     else return createNode('operator', [func, exp], {name: '^', operatorType: 'infix'});
   }
 
 // builtInFuncsTitles = 
 builtInFuncsTitles =
-  &{ return options.singleCharName } n:( // the same as options.builtInFunctions
+  &{ return options.singleCharName } n:(
+    // CAUTION: we have to use them literally here to enable
+    // sinx  =>  node.bunltInFunction("sin", ["x"]);
     "sinh"/ "cosh"/ "tanh"/ "sech"/  "csch"/  "coth"/  
     "arsinh"/ "arcosh"/ "artanh"/ "arsech"/ "arcsch"/ "arcoth"/
     "sin"/ "cos"/ "tan"/ "sec"/ "csc"/  "cot"/
@@ -163,41 +165,51 @@ builtInFuncsTitles =
   ) { return n; } /
   n:$multiCharName &{ return options.builtInFunctions.indexOf(n) > -1 } { return n; }
 
-builtInFuncsArg = 
-  (
-    head:(Number / !Functions n:Name { return n; })
-    tail:(_ (!Functions n:Name { return n; }))* {
-      if(options.autoMult){
-        // left to right
-        return tail.reduce(function(result, element) {
-          return createNode("automult" , [result, element[1]]);
-        }, head);
+builtInFuncArgs = a:(
+    (
+      head:(Number / !Functions n:Name { return n; })
+      tail:(_ (!Functions n:Name { return n; }))* {
+        if(options.autoMult){
+          // left to right
+          return tail.reduce(function(result, element) {
+            return createNode("automult" , [result, element[1]]);
+          }, head);
+        }
+        error('invalid syntax, hint: missing * sign');
       }
-      error('invalid syntax, hint: missing * sign');
-    }
-  ) /* reset of the factors */ / BlockpParentheses / BlockVBars / Functions
+    ) /
+    BlockParentheses /
+    BlockVBars /
+    Functions
+  ) {
+    if (a.type === "block" && a.name === "()") return a.args ? a.args : [];
+    return [a]; // a is not parenthese
+  }
 
-// TODO: 2axsin3y
+// TODO: 2axsin3y --- singleCharName = true
 Function = 
   // no need for FnNameNME
-  name:$NameNME _ parentheses:(BlockpParentheses / VoidBlockpParentheses) &{
-    if(!parentheses.args /** VoidBlockpParentheses */ && !options.strict) {
+  name:$NameNME _ parentheses:(BlockParentheses / VoidBlockParentheses) &{
+    if(!parentheses.args /*: VoidBlockParentheses */ && !options.strict) {
+      // it has to be a function, it may or may not be provided in `options.functions`
       return true;
     }
-    return options.functions.indexOf(name)>-1;
-  } { return createNode('function', [parentheses], { name }); }
+    let functionExists = options.functions.indexOf(name)>-1;
+    if (!functionExists && !parentheses.args) error("unexpected empty parenthese after a non-function");
+    return functionExists; 
+  } { return createNode('function', parentheses.args || [], { name }); }
   
 
 MultiCharFunction =
   // for member expressions
-  name:$MultiCharNameNME _ parentheses:(BlockpParentheses / VoidBlockpParentheses) {
+  name:$MultiCharNameNME _ parentheses:(BlockParentheses / VoidBlockParentheses) {
     return createNode('function', [parentheses], { name });
   }
 
-BlockpParentheses =
+BlockParentheses =
   "(" args:Delimiter /* returns Expression id no delimiter found */ ")" { return createNode('block', [args], {name: '()'}); }
 
-VoidBlockpParentheses =
+VoidBlockParentheses =
   "(" _ ")" { return createNode('block', null, {name: '()'}); }
 
 BlockVBars =
