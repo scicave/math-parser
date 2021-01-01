@@ -26,7 +26,6 @@
     "test": "jest ./tests",
     "start": "nodemon -w src -w tools -e js,pegjs --exec npm run build",
     "test:watch": "npm t -- --watch",
-    "debug": "node debug.js --math \"1 + 2 ^ p.x/ 5!\" # for vsc built-in debugger",
     "preversion": "npm t",
     "postversion": "npm run prod"
   },
