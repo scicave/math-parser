@@ -84,7 +84,7 @@ as multiplication `f*(x)`, in order to parse it as a function with name = "f",
 you can pass `options.functions = ['f']`.
 Notice that when `strict = false`, some expression such as `f()`,
 an id follwed by empty parentheses, will be parsed with type = "function"
-whether or not `options.function` includes "f".
+whether or not `options.functions` includes "f".
 
 When parsing `obj.method(...)`, regradless of options, it will be always:
 ```
@@ -94,7 +94,7 @@ When parsing `obj.method(...)`, regradless of options, it will be always:
         __/      \________
         id        function
      | name        | name = "method"
-     | = "obj"     | arg = [ ... ]
+     | = "obj"     | args = [ ... ]
 ```
 
 # Unsure about
