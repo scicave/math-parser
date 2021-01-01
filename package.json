@@ -1,6 +1,6 @@
 {
   "name": "@scicave/math-parser",
-  "version": "2.3.0",
+  "version": "3.0.0-alpha.0",
   "description": "A mathematical parser. We mean by mathematical that, e.g., arithmetic operations is considered for example if you pass \"1+2\", the result would by a (add node \"+\") with two children nodes of type number.",
   "main": "lib/index.js",
   "files": [
