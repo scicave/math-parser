@@ -1,4 +1,4 @@
-# Unreleased, v3.0
+# Unreleased, v3.0.0
 
 ## Breaking
 
@@ -10,9 +10,21 @@
 ## Added
 
 - Built-in function `sqrt`
-
+- Intervals: `(-1, infinity])`
 - Node of type "tuple": `(1, 2, x, ...)`
-- `options.spreadOperatorAllowed`
+- `options.spreadOperatorAllowed`, acceptable values:
+  - `1` or `true`: `(1, 2, x, ...)` is allowed.
+  - `1` or `true`: `(1, 2, ..., x, ...)` is allowed.
+  - The same for function's arguments. 
+- `options.builtInVariables`
+  - `infinity, pi, phi`: these has specific values or notions in maths.
+  - `phix` is considered as automult of single-char ids, if `options.singleCharName=true`, otherwise it is node of type "id".
+- Validate built-in functions arguments.
+- Pre-validation for input `math`.
+  - So `1+(2` is not valid in strict mode `options.strict = true`.
+  - `1+2)` is not valid at all.
+  - `1+[2)`, is valid, it is interval.
+  - `1+ {2)` is not valid.
 
 
 # 22 Oct 2020, v2.3.0
