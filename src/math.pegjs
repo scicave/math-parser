@@ -11,6 +11,7 @@
     functions: [],
     singleCharName: true,
     memberExpressionAllowed: true,
+    keepParentheses: false,
     strict: false,
     builtInFunctions: [
       "sinh", "cosh", "tanh", "sech",  "csch",  "coth",  
@@ -18,7 +19,7 @@
       "sin", "cos", "tan", "sec",  "csc",  "cot",
       "asin", "acos", "atan", "asec", "acsc",  "acot",
       "arcsin", "arccos", "arctan", "arcsec",  "arccsc",  "arccot", 
-      "ln", "log", "exp", "floor", "ceil", "round", "random"
+      "ln", "log", "exp", "floor", "ceil", "round", "random", "sqrt"
     ]
   }, options); /// override the default options
   
@@ -127,19 +128,21 @@ Factor
   }
 
 factorWithoutNumber =
-  base:(MemberExpression / Functions / BlockParentheses / BlockVBars / NameNME) _ fac:factorial? {
+  base:(MemberExpression / Functions / TupleOrExprOrBlock / BlockVBars / NameNME) _ fac:factorial? {
     if (fac) base = createNode('operator', [base], {name: '!', operatorType: 'postfix'});
     return base;
   }
 
-Delimiter
-  // there is spaces around expressions already no need for _ rule
-  = head:Expression tail:("," Expression)* {
+// there is spaces around expressions already no need for _ rule
+delimiterExpression
+  = head:Expression tail:(delimiters Expression)* {
       if (tail.length){
-        return createNode('delimiter', [head].concat(tail.map(a => a[1])), {name: ','});
+        return [head].concat(tail.map(a => a[1]));
       }
       return head;
     }
+
+delimiters = ","
 
 Functions "functions" =
   BuiltInFunctions / Function
@@ -161,7 +164,7 @@ builtInFuncsTitles =
     "sin"/ "cos"/ "tan"/ "sec"/ "csc"/  "cot"/
     "asin"/ "acos"/ "atan"/ "asec"/ "acsc"/  "acot"/
     "arcsin"/ "arccos"/ "arctan"/ "arcsec"/  "arccsc"/ "arccot"/ 
-    "ln"/ "log"/ "exp"/ "floor"/ "ceil"/ "round"/ "random" / "sum"
+    "ln"/ "log"/ "exp"/ "floor"/ "ceil"/ "round"/ "random" / "sum" / "sqrt"
   ) { return n; } /
   n:$multiCharName &{ return options.builtInFunctions.indexOf(n) > -1 } { return n; }
 
@@ -178,39 +181,61 @@ builtInFuncArgs = a:(
         error('invalid syntax, hint: missing * sign');
       }
     ) /
-    BlockParentheses /
+    functionParentheses /
     BlockVBars /
     Functions
   ) {
-    if (a.type === "block" && a.name === "()") return a.args ? a.args : [];
-    return [a]; // a is not parenthese
+    return Array.isArray(a) ? a : [a]; //  array when it is functionParentheses
   }
 
-// TODO: 2axsin3y --- singleCharName = true
 Function = 
   // no need for FnNameNME
-  name:$NameNME _ parentheses:(BlockParentheses / VoidBlockParentheses) &{
-    if(!parentheses.args /*: VoidBlockParentheses */ && !options.strict) {
-      // it has to be a function, it may or may not be provided in `options.functions`
-      return true;
-    }
-    let functionExists = options.functions.indexOf(name)>-1;
-    if (!functionExists && !parentheses.args) error("unexpected empty parenthese after a non-function");
-    return functionExists; 
-  } { return createNode('function', parentheses.args || [], { name }); }
-  
-
-MultiCharFunction =
-  // for member expressions
-  name:$MultiCharNameNME _ parentheses:(BlockParentheses / VoidBlockParentheses) {
-    return createNode('function', [parentheses], { name });
+  name:$NameNME _ args:(
+    a:(functionParenthesesNotVoid &{
+      let exists = options.functions.indexOf(name)>-1;
+      if (!exists && !options.autoMult)
+        error("even autoMult is not activated, hint: add \"*\" sign");
+      return exists;
+    }) { return a[0] } /
+    voidParentheses &{
+      let exists = options.functions.indexOf(name)>-1;
+      if (!exists && options.strict)
+        error("unexpected empty a after a non-function");
+      return true; // in case not strict mode, it is a valid function regardless of `exists`
+    } { return [] }
+  ) {
+    // `a` is eiher array or expr
+    return createNode('function', args, { name });
   }
 
-BlockParentheses =
-  "(" args:Delimiter /* returns Expression id no delimiter found */ ")" { return createNode('block', [args], {name: '()'}); }
+// for member expressions
+MultiCharFunction =
+  name:$MultiCharNameNME _ a:functionParentheses {
+    // `a` is eiher array or expr
+    return createNode('function', a, { name });
+  }
 
-VoidBlockParentheses =
-  "(" _ ")" { return createNode('block', null, {name: '()'}); }
+TupleOrExprOrBlock =
+  "(" delmOrExpr:delimiterExpression ")" {
+    if(Array.isArray(delmOrExpr))
+      return createNode("tuple", delmOrExpr);
+    return options.keepParentheses
+      ? createNode('block', [delmOrExpr], { name: '()' })
+      : delmOrExpr;
+  }
+
+functionParentheses =
+  a:("(" b:delimiterExpression ")" { return b } / voidParentheses { return [] }) {
+    return Array.isArray(a) ? a : [a];
+  }
+
+functionParenthesesNotVoid =
+  "(" a:delimiterExpression ")" {
+    return Array.isArray(a) ? a : [a];
+  }
+
+// related to functions
+voidParentheses =  "(" _ ")" { return [] }; 
 
 BlockVBars =
   "|" expr:Expression "|" { return createNode('block', [expr], {name: '||'}) }

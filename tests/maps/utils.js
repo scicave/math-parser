@@ -94,6 +94,12 @@ class NodeCreator {
     if (!Array.isArray(args)) this.invalidArgs("member expression");
     return { type: "member expression", args };
   }
+
+  tuple(args) {
+    if (!Array.isArray(args)) this.invalidArgs("tuple");
+    return { type: "tuple", args };
+  }
+
 }
 
 exports.node = new NodeCreator();

@@ -44,8 +44,8 @@ Node.prototype.types = {
   BLOCK: 'block',
   AUTO_MULT: "automult",
   OPERATOR:  'operator',
-  DELIMITER: 'delimiter',
   MEMBER_EXPRESSION: 'member expression',
+  TUPLE: 'tuple',
 };
 
 Node.prototype.types.values = Object.values(Node.prototype.types);

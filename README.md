@@ -56,6 +56,8 @@ Default: `true`
 Maths conventionally works with single char named variables and constants, but in programming languages you have freedom. Moreover, the convention is to use multi-char named identifier.
 For example, if you want to use "pi" or "phi", etc, you have to set this to `false`.  
 
+When a member expression is found, properties and methods are allowed to be multichar, despite of `options.singleCharName`
+
 > TODO: make new options `variables`, with default values "pi" and "phi", ..., use this option to deal with some multi-char variable (or constants, or you can say identifiers) in singleCharName mode
 
 ## strict: boolean
@@ -77,8 +79,23 @@ For example:
 
 ## functions: [string]
 
-When autoMult is `true`, some expression like `f(x)` will be considered as multiplication, in order to parse it as a function with name = "f", you can pass `options.functions = ['f']`. Notice that, strict = flase, some expression such as `f()`, an id follwed by empty parentheses, will be parsed with type = "function" whether or not `options.function` includes "f".
+When autoMult is `true`, some expression like `f(x)` will be considered
+as multiplication `f*(x)`, in order to parse it as a function with name = "f",
+you can pass `options.functions = ['f']`.
+Notice that when `strict = false`, some expression such as `f()`,
+an id follwed by empty parentheses, will be parsed with type = "function"
+whether or not `options.function` includes "f".
 
+When parsing `obj.method(...)`, regradless of options, it will be always:
+```
+      member expression
+            /\_
+           /   \_
+        __/      \________
+        id        function
+     | name        | name = "method"
+     | = "obj"     | arg = [ ... ]
+```
 
 # Unsure about
 In these confusing cases, you can handle the parsed expression to transform to what you want.

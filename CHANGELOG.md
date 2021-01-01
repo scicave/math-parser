@@ -1,6 +1,24 @@
+# Unreleased, v3.0
+
+## Breaking
+
+- Node of type "function", when its args is `[{ type: "block", name: "()", ... }]`,  function's args is assigned to parenthesis args. In other words, in this case it will be `Array` not `{ type: "block", ... }`.
+- Removing node type `delimeter`:
+  - `f(1,3,4)` when parsed as function, it will have args with length 3.
+  - `(1,3,4)` will be parsed with `type = "tuple"`.
+
+## Added
+
+- Built-in function `sqrt`
+
+- Node of type "tuple": `(1, 2, x, ...)`
+- `options.spreadOperatorAllowed`
+
+
 # 22 Oct 2020, v2.3.0
+
 ## Add
-  - check for validity of block (including brackets) syntax, e.g., make sure that they are put in the right order and nested correctly, the block has opening and closing charachters.
+  - check for validity of block (including brackets) syntax, e.g., make sure that they are put in the right order and nested correctly, the block has opening and closing characters.
 
 # 31 Aug 2020, v2.2.0
 Summary of changes:

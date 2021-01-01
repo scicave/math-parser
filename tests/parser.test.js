@@ -33,6 +33,7 @@ expect.extend({
         }
         return r;
       }
+
       const simple_node = simplify(node);
       const simple_struct = simplify(struct);
       return {

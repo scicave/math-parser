@@ -1,22 +1,26 @@
 const basic = require("./basic");
-// const singleChar__memExpr = require("./singleChar__memExpr");
-// const singleChar__functions = require("./singleChar__functions");
+const singleChar__memExpr = require("./singleChar__memExpr");
+const singleChar__functions = require("./singleChar__functions");
 const singleChar__autoMult = require("./singleChar__autoMult");
-// const noSingleChar__memExpr = require("./noSingleChar__memExpr");
+const noSingleChar__memExpr = require("./noSingleChar__memExpr");
 const noSingleChar__functions = require("./noSingleChar__functions");
 const noSingleChar__autoMult = require("./noSingleChar__autoMult");
+const strict = require("./strict");
+const keepParentheses = require("./keepParentheses");
 
 module.exports = {
   basic,
   options: {
+    strict,
+    keepParentheses,
     "singleCharName=true": {
-      // "member expression": singleChar__memExpr,
-      // "function": singleChar__functions,
+      "member expression": singleChar__memExpr,
+      "function": singleChar__functions,
       "auto multiplication": singleChar__autoMult,
     },
 
     "singleCharName=false": {
-      // "member expression": noSingleChar__memExpr,
+      "member expression": noSingleChar__memExpr,
       "functions": noSingleChar__functions,
       "auto multiplication": noSingleChar__autoMult,
     }

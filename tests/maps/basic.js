@@ -27,4 +27,9 @@ module.exports = [
     ]),
   },
 
+  {
+    math: "(1, 3, \n4)",
+    struct: node.tuple([1,3,4]),
+  },
+
 ]
