@@ -86,7 +86,7 @@ Notice that when `strict = false`, some expression such as `f()`,
 an id follwed by empty parentheses, will be parsed with type = "function"
 whether or not `options.functions` includes "f".
 
-When parsing `obj.method(...)`, regradless of options, it will be always:
+When parsing `a.method(...)`, regradless of options, `method` will be always.
 ```
       member expression
             /\_
@@ -94,7 +94,7 @@ When parsing `obj.method(...)`, regradless of options, it will be always:
         __/      \________
         id        function
      | name        | name = "method"
-     | = "obj"     | args = [ ... ]
+     | = "a"       | args = [ ... ]
 ```
 
 # Unsure about
