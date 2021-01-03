@@ -22,10 +22,11 @@
     }
   },
   "scripts": {
+    "start": "nodemon -w src -w tools -e js,pegjs --exec npm run build",
     "prod": "node ./tools/generate-version-file.js && npm run build",
     "build": "node ./tools/build.js",
     "test": "jest ./tests",
-    "start": "nodemon -w src -w tools -e js,pegjs --exec npm run build",
+    "test:ci": "npm t -- --ci --detectOpenHandles --forceExit",
     "test:watch": "npm t -- --watch",
     "preversion": "npm t",
     "postversion": "npm run prod"
