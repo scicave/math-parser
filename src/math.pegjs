@@ -1,18 +1,11 @@
-// TODO: add option builtInVaraibles to use in case of single char name to parse pi and phi
-// TODO: add option varaibles to use in case of single char name to enable exclude some multi-char name from this options
-// TODO: p1.func(x), parse as member expression has arg[1] as id, and arg[2] as function,
-
 {
-
-  preParse(input, peg$computeLocation, error);
-
   options = Object.assign({
-    autoMult: true,
-    functions: [],
-    singleCharName: true,
-    memberExpressionAllowed: true,
-    keepParentheses: false,
     strict: false,
+    autoMult: true,
+    singleCharName: true,
+    keepParentheses: false,
+    functions: [],
+    builtInVariables: [],
     builtInFunctions: [
       "sinh", "cosh", "tanh", "sech",  "csch",  "coth",  
       "arsinh", "arcosh", "artanh", "arsech",  "arcsch", "arcoth",
@@ -20,16 +13,61 @@
       "asin", "acos", "atan", "asec", "acsc",  "acot",
       "arcsin", "arccos", "arctan", "arcsec",  "arccsc",  "arccot", 
       "ln", "log", "exp", "floor", "ceil", "round", "random", "sqrt"
+    ],
+    additionalFunctions: [
+      
     ]
-  }, options); /// override the default options
+  }, options, {
+    extra: {
+      memberExpressions: true,
+      intervals: true,
+      tuples: true,
+      sets: true,
+      ellipsis: 2,
+      trailingComma: true,
+      blankTerms: true,
+      ...(options.extra||{})
+     }
+  });
   
+  preParse(input, peg$computeLocation, error);
+
   function createNode(...args){
     let n = new Node(...args);
+    if(n.type === "member expression" && !options.extra.memberExpressions)
+      error(`member expression syntax is not allowed`);
+    if(n.type === "tuple" && !options.extra.tuples)
+      error(`tuples syntax is not allowed`);
+    if(n.type === "set" && !options.extra.sets)
+      error(`sets syntax is not allowed`);
+    if(n.type === "interval" && !options.extra.sets)
+      error(`intervals syntax is not allowed`);
     n.match = {
       location: location(),
       text: text(),
     }
     return n;
+  }
+
+  function handleBlock(node, o, c) {
+    if (
+      o === '[' && c === "}" ||
+      o === '{' && c === "]" ||
+      o === '(' && c === "}" ||
+      o === '{' && c === ")"
+    ) error(`unexpected closing for the block`);
+    if(Array.isArray(node)) {
+      if (node.length === 2 && options.extra.intervals)
+        return createNode("interval", node, { startInlusive: o==="[", endInclusive: c==="]" });
+      if (o === "[" || c === "]") error(`unexpected closing for the block`);
+      if (node.length === 2 && !options.extra.tuples)
+        return error("neither tuples nor intervals are allowed");
+      return createNode("tuple", node);
+    }
+    if (o === "[" || c === "]") error(`unexpected closing for the block`);
+    return options.keepParentheses
+      ? createNode("parentheses", [node])
+      : node;
   }
   
 }
@@ -94,13 +132,9 @@ Operation3 "operation or factor" =
 
 Operation4 "operation or factor" = /// series of multiplication or one "Factor"
   head:(Exp) tail:(_ ExpBNN)* {
-    if(options.autoMult){
-        // left to right
-      return tail.reduce(function(result, element) {
-        return createNode("automult" , [result, element[1]]);
-      }, head);
-    }
-    error('invalid syntax, hint: missing * sign');
+    return tail.reduce(function(result, element) {
+      return createNode("automult" , [result, element[1]]);
+    }, head);
   }
 
 
@@ -123,26 +157,18 @@ ExpBNN =
 
 Factor
   = factorWithoutNumber / base:Number _ fac:factorial? {
-    if (fac) base = createNode('operator', [base], {name: '!', operatorType: 'postfix'});
+    if (fac) base = createNode('postfix operator', [base], {name: '!'});
     return base;
   }
 
 factorWithoutNumber =
-  base:(MemberExpression / Functions / TupleOrExprOrBlock / BlockVBars / NameNME) _ fac:factorial? {
-    if (fac) base = createNode('operator', [base], {name: '!', operatorType: 'postfix'});
+  base:(
+    MemberExpression / Functions / TupleOrExprOrParenOrIntervalOrSet /
+    BlockVBars / NameNME
+  ) _ fac:factorial? {
+    if (fac) base = createNode('postfix operator', [base], {name: '!'});
     return base;
   }
-
-// there is spaces around expressions already no need for _ rule
-delimiterExpression
-  = head:Expression tail:(delimiters Expression)* {
-      if (tail.length){
-        return [head].concat(tail.map(a => a[1]));
-      }
-      return head;
-    }
-
-delimiters = ","
 
 Functions "functions" =
   BuiltInFunctions / Function
@@ -172,13 +198,9 @@ builtInFuncArgs = a:(
     (
       head:(Number / !Functions n:Name { return n; })
       tail:(_ (!Functions n:Name { return n; }))* {
-        if(options.autoMult){
-          // left to right
-          return tail.reduce(function(result, element) {
-            return createNode("automult" , [result, element[1]]);
-          }, head);
-        }
-        error('invalid syntax, hint: missing * sign');
+        return tail.reduce(function(result, element) {
+          return createNode("automult" , [result, element[1]]);
+        }, head);
       }
     ) /
     functionParentheses /
@@ -189,12 +211,11 @@ builtInFuncArgs = a:(
   }
 
 Function = 
-  // no need for FnNameNME
   name:$NameNME _ args:(
     a:(functionParenthesesNotVoid &{
       let exists = options.functions.indexOf(name)>-1;
       if (!exists && !options.autoMult)
-        error("even autoMult is not activated, hint: add \"*\" sign");
+        error(`"${name}" is not a function, and autoMult is not activated`);
       return exists;
     }) { return a[0] } /
     voidParentheses &{
@@ -215,24 +236,45 @@ MultiCharFunction =
     return createNode('function', a, { name });
   }
 
-TupleOrExprOrBlock =
-  "(" delmOrExpr:delimiterExpression ")" {
-    if(Array.isArray(delmOrExpr))
-      return createNode("tuple", delmOrExpr);
-    return options.keepParentheses
-      ? createNode('block', [delmOrExpr], { name: '()' })
-      : delmOrExpr;
+TupleOrExprOrParenOrIntervalOrSet =
+  o:("("/"["/"{")
+  delmOrExpr:commaExpression
+  c:(")"/"]"/"}")
+  {
+    return handleBlock(delmOrExpr, o, c);
   }
 
 functionParentheses =
-  a:("(" b:delimiterExpression ")" { return b } / voidParentheses { return [] }) {
+  a:("(" b:commaExpression ")" { return b } / voidParentheses { return [] }) {
     return Array.isArray(a) ? a : [a];
   }
 
 functionParenthesesNotVoid =
-  "(" a:delimiterExpression ")" {
+  "(" a:commaExpression ")" {
     return Array.isArray(a) ? a : [a];
   }
+
+// there is spaces around expressions already no need for _ rule
+commaExpression
+  = head:Expression tail:("," (Expression / "..."/ _))* {
+      if (tail.length){
+        if(tail[tail.length-1] === "..." && !options.extra.ellipsis)
+          error("ellipsis at the end is not allow");
+        if(/^\s*$/.test(tail[tail.length-1]) && !options.extra.trailingComma)
+          tail.pop();
+        for (let i=0; i<tail.length-1; i++) {
+          if(tail[i] === "..." && options.extra.ellipsis !== 2)
+            error("ellipsis at the middle is not allow");
+          if(/^\s*$/.test(tail[i])) {
+            if(!options.extra.blankTerms)
+              error("blank terms are't allowed");
+            head[i] = null;
+          }
+        }
+        return [head].concat(tail.map(a => a[1]));
+      }
+      return head;
+    }
 
 // related to functions
 voidParentheses =  "(" _ ")" { return [] }; 
@@ -296,7 +338,6 @@ multiCharName "multi char name"= (char/"_")+[0-9]*
 MemberExpression =
   // left to right
   head:memberFirstArg _ "." chain:( _ memberArg _ ".")* _ tail:memberArg {
-    if(!options.memberExpressionAllowed) error(`member expression syntax is not allowed`);
     let arg1 = chain.reduce(function(result, element) {
       return createNode('member expression' , [result, element[1]]);
     }, head);
@@ -306,7 +347,6 @@ MemberExpression =
 MemberExpressionName "member expression end with name" =
   // left to right
   head:memberFirstArg _ "." chain:( _ memberArg _ ".")* _ tail:MultiCharNameNME {
-    if(!options.memberExpressionAllowed) error(`member expression syntax is not allowed`);
     let arg1 = chain.reduce(function(result, element) {
       return createNode('member expression' , [result, element[1]]);
     }, head);
@@ -316,7 +356,6 @@ MemberExpressionName "member expression end with name" =
 MemberExpressionFunction "member expression end with function" =
   // left to right
   head:memberFirstArg _ "." chain:( _ memberArg _ ".")* _ tail:MultiCharFunction {
-    if(!options.memberExpressionAllowed) error(`member expression syntax is not allowed`);
     let arg1 = chain.reduce(function(result, element) {
       return createNode('member expression' , [result, element[1]]);
     }, head);

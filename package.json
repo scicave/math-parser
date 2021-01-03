@@ -17,7 +17,8 @@
   "jest": {
     "moduleNameMapper": {
       "parser": "<rootDir>/lib/index.js",
-      "preParse": "<rootDir>/lib/preParse.js"
+      "preParse": "<rootDir>/lib/preParse.js",
+      "Node": "<rootDir>/lib/Node.js"
     }
   },
   "scripts": {

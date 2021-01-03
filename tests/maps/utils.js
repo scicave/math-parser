@@ -56,13 +56,6 @@ class NodeCreator {
     return { type: "function", name, args };
   }
 
-  block(name, args) {
-    // frac
-    if (typeof name !== "string" || !Array.isArray(args))
-      this.invalidArgs("block");
-    return { type: "block", name, args };
-  }
-
   op(name, args) {
     // operator
     if (
@@ -82,7 +75,7 @@ class NodeCreator {
       !Array.isArray(args)
     )
       this.invalidArgs("postfix operator");
-    return { type: "operator", name, args, operatorType: "postfix" };
+    return { type: "postfix operator", name, args };
   }
 
   am(args) {
@@ -95,9 +88,26 @@ class NodeCreator {
     return { type: "member expression", args };
   }
 
+  paren(args) {
+    // frac
+    if (!Array.isArray(args) || args.length !== 1)
+      this.invalidArgs("parentheses");
+    return { type: "parentheses", args };
+  }
+
   tuple(args) {
     if (!Array.isArray(args)) this.invalidArgs("tuple");
     return { type: "tuple", args };
+  }
+
+  set(args) {
+    if (!Array.isArray(args)) this.invalidArgs("set");
+    return { type: "set", args };
+  }
+
+  interval(args, extra) {
+    if (!Array.isArray(args)) this.invalidArgs("set");
+    return { type: "set", args, ...extra };
   }
 
 }

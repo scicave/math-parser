@@ -1,69 +1,53 @@
-
 class Node {
   constructor(type, args, props) {
-
     Object.assign(this, props);
 
-    if (this.types.values.indexOf(type) === -1) {
+    if (Node.types.values.indexOf(type) === -1) {
       throw new Error('invalid type for the node, "' + type + '"');
-    }
-    
-    if (type === this.types.OPERATOR && this.types.operators[props.operatorType].indexOf(props.name) === -1) {
-      throw new Error(`invalid ${props.operatorType} operator "${props.name}"`);
     }
 
     this.type = type;
     this.args = args;
-
   }
 
-  checkType(t){
-    if(this.types.values.indexOf(t) > -1){
-      if(this.type === t){
-        return true;
-      }
+  checkType(t) {
+    if (Node.types.values.indexOf(t) > -1) {
+      return this.type === t;
     } else {
-      throw new Error('invalid type, can\'t check for "' + t + '"');
+      throw new Error("invalid type, can't check for \"" + t + '"');
     }
   }
 
-  check(props){
-    for(let p in props){
-      if(p === 'type') { if(!this.checkType(props.type)) return false; } 
-      else if(p !== "args" && props[p] !== this[p]) return false;
+  // check every thing except args
+  check(props) {
+    for (let p in props) {
+      if (p === "type") {
+        if (!this.checkType(props.type)) return false;
+      } else if (p !== "args" && props[p] !== this[p]) return false;
     }
     return true;
   }
-
 }
 
-Node.prototype.types = {
+Node.types = {
   NUMBER: "number",
   ID: "id",
   FUNCTION: "function",
-  BLOCK: 'block',
   AUTO_MULT: "automult",
-  OPERATOR:  'operator',
-  MEMBER_EXPRESSION: 'member expression',
-  TUPLE: 'tuple',
+  OPERATOR: "operator",
+  POSTFIX_OPERATOR: "postfix operator",
+  MEMBER_EXPRESSION: "member expression",
+  PARENTHESES: "parentheses",
+  INTERVAL: "interval",
+  TUPLE: "tuple",
+  SET: "set",
 };
 
-Node.prototype.types.values = Object.values(Node.prototype.types);
+Node.types.values = Object.values(Node.types);
 
-Node.prototype.types.operators = {
-  "infix": [
-    "^","*","/","+","-",
-    "&&","||", "==", ">=",
-    "<=", "<", ">", "="
-  ],
-  "postfix": [
-    "!"
-  ]
+Node.types.operators = {
+  infix: ["^", "*", "/", "+", "-", "&&", "||", "==", ">=", "<=", "<", ">", "="],
+  postfix: ["!"],
 };
-
-Node.prototype.types.blocks = [
-  "[]", "()", "{}", "[]", "||",
-];
-
 
 module.exports = Node;

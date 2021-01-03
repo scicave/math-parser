@@ -1,7 +1,8 @@
 // TODO: add more tests
 
-let parser = require("parser");
-let testsMap = require("./maps");
+const parser = require("parser");
+const preParse = require("preParse");
+const testsMap = require("./maps");
 let quite = 0; // no struct or node logged when a test fails
 
 expect.extend({
@@ -97,7 +98,36 @@ expect.extend({
   },
 });
 
-// TODO: add tests for preParse.js
+describe("testing preParse module", () => {
+  
+  class SyntaxError extends Error {}
+  const _preParse = (() => {
+    function computeLocation() {}
+    function error (msg) { throw new SyntaxError(msg) }
+    return (math) => {
+      return preParse(math, computeLocation, error);
+    }
+  })();
+
+  it("should throw: when passing blank or whitespaced string", ()=>{
+    expect(()=>_preParse("")).toThrow(SyntaxError);
+    expect(()=>_preParse("\t ")).toThrow(SyntaxError);
+    expect(()=>_preParse("\n\r \t")).toThrow(SyntaxError);
+  });
+
+  it("should throw: unmatched blocks", () => {
+    expect(()=>_preParse("[")).toThrow(SyntaxError);
+    expect(()=>_preParse("[1}")).toThrow(SyntaxError);
+    expect(()=>_preParse("(1}")).toThrow(SyntaxError);
+    expect(()=>_preParse("1}")).toThrow(SyntaxError);
+  });
+
+  it("should preParse: when unmatched blocks are valid interval", () => {
+    expect(()=>_preParse("1+(2,a]")).not.toThrow(SyntaxError);
+    expect(()=>_preParse("1+[2,a)")).not.toThrow(SyntaxError);
+  });
+
+});
 
 function mAsTitle(t) {
   // return math.replace(/\n/g, '\\n');
@@ -113,7 +143,7 @@ function doTest(on, title) {
   describe(title, ()=>{
     if (on instanceof Array) {
       on.forEach((t) => {
-        let title = t.title || mAsTitle(t);
+        let title = t.title ? `${t.title}\n\t\t\t${t.math}` : mAsTitle(t);
         let fn = () => {
           if (t.error) 
             expect(()=>parser.parse(t.math, t.parserOptions)).toThrow(
