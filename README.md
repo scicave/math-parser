@@ -1,6 +1,8 @@
 # math-parser
 A math expressions parser. We mean by mathematical that, e.g., arithmetic operations is considered for example if you pass "1+2", the result would by a (add node "+") with two children nodes of type number.
 
+**See also:** [math-latex-parser](https://github.com/scicave/math-parser)
+
 # Install
 `npm install @scicave/math-parser`
 
