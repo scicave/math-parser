@@ -8,7 +8,7 @@
   - `phix` is considered as automult of single-char ids, if `options.singleCharName=true`, otherwise it is node of type "id".
 - When `options.strict === true`: the following expression is valid `1+3(2-3sqrt(pi)`.
 
-# Unreleased, v3.0.0
+# 3 Jan 2021, v3.0.0
 
 ## Breaking
 
