@@ -90,6 +90,8 @@ Default: every thing is allowed.
     - `1` or other truthy values: `(1, 2, x, ...)` is allowed.
     - `2`: `(1, 2, ..., x, ...)` is allowed.
     - The same for function's arguments.
+- `trailingComma`: to allow some expressions like `f(1,2,)`
+- `blankTerms`: to allow some expressions like `f(1,,2)`
 
 
 ## .functions

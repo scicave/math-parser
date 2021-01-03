@@ -1,3 +1,9 @@
+
+# Future Release, v3.1.0
+
+## Add
+- `options.extra.matrices`
+
 # Unreleased, v3.0.0
 
 ## Breaking
@@ -26,6 +32,8 @@
     - `1` or other truthy values: `(1, 2, x, ...)` is allowed.
     - `2`: `(1, 2, ..., x, ...)` is allowed.
     - The same for function's arguments.
+  - `trailingComma`: to allow some expressions like `f(1,2,)`
+  - `blankTerms`: to allow some expressions like `f(1,,2)`
 - `options.builtInVariables`
   - `infinity, pi, phi`: these has specific values or notions in maths.
   - `phix` is considered as automult of single-char ids, if `options.singleCharName=true`, otherwise it is node of type "id".
