@@ -105,13 +105,13 @@ whether or not `options.functions` includes "f".
 
 When parsing `a.method(...)`, regardless of options, `method` will be always.
 ```
-      member expression
-            /\_
-           /   \_
-        __/      \________
-        id        function
-     | name        | name = "method"
-     | = "a"       | args = [ ... ]
+        member expression
+             _/\_
+           _/    \_
+        __/        \________
+        id          function
+   name  |          | name = "method"
+   = "a" |          | args = [ ... ]
 ```
 
 # Unsure about
