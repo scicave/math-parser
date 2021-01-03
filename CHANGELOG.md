@@ -6,16 +6,26 @@
 - Removing node type `delimeter`:
   - `f(1,3,4)` when parsed as function, it will have args with length 3.
   - `(1,3,4)` will be parsed with `type = "tuple"`.
+- Removing node of type `block`, we now have `set, tuple, parentheses, interval`.
+- `options.memberExpressionAllowed` is now `options.extra.ellipsis`.
 
 ## Added
 
 - Built-in function `sqrt`
-- Intervals: `(-1, infinity])`
-- Node of type "tuple": `(1, 2, x, ...)`
-- `options.spreadOperatorAllowed`, acceptable values:
-  - `1` or `true`: `(1, 2, x, ...)` is allowed.
-  - `1` or `true`: `(1, 2, ..., x, ...)` is allowed.
-  - The same for function's arguments. 
+- `options.extra`:
+  - `memberExpressions`
+  - `intervals`: true or false, will return node with properties `{ startInlusive: boolean, endInclusive: boolean }`.
+    - `[1,2]`
+    - `(-.5, infinity)`
+    - `(-pi, 1]`
+    - `[2,5)`
+  - `sets` true or false, will return its items in the property `args`, affected with the option `extra.ellipsis`.
+  - `tuples `true or false, e.g., `(1, 2, x, ...)`.
+  - `ellipsis`:
+    - `0` or other falsy values: is not allowed
+    - `1` or other truthy values: `(1, 2, x, ...)` is allowed.
+    - `2`: `(1, 2, ..., x, ...)` is allowed.
+    - The same for function's arguments.
 - `options.builtInVariables`
   - `infinity, pi, phi`: these has specific values or notions in maths.
   - `phix` is considered as automult of single-char ids, if `options.singleCharName=true`, otherwise it is node of type "id".
