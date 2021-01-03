@@ -3,6 +3,10 @@
 
 ## Add
 - `options.extra.matrices`
+- `options.builtInIDs`
+  - `infinity, pi, phi`: these has specific values or notions in maths.
+  - `phix` is considered as automult of single-char ids, if `options.singleCharName=true`, otherwise it is node of type "id".
+- When `options.strict === true`: the following expression is valid `1+3(2-3sqrt(pi)`.
 
 # Unreleased, v3.0.0
 
@@ -34,9 +38,6 @@
     - The same for function's arguments.
   - `trailingComma`: to allow some expressions like `f(1,2,)`
   - `blankTerms`: to allow some expressions like `f(1,,2)`
-- `options.builtInVariables`
-  - `infinity, pi, phi`: these has specific values or notions in maths.
-  - `phix` is considered as automult of single-char ids, if `options.singleCharName=true`, otherwise it is node of type "id".
 - Validate built-in functions arguments.
 - Pre-validation for input `math`.
   - So `1+(2` is not valid in strict mode `options.strict = true`.
