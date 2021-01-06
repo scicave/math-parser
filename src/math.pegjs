@@ -99,15 +99,7 @@ Operation13 "operation or factor" =
   }
 
 Operation14 "operation or factor" = 
-  head:Operation15 tail:(_ "==" _ Operation15)* {
-        // left to right
-    return tail.reduce(function(result, element) {
-      return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
-    }, head);
-  }
-
-Operation15 "operation or factor" = 
-  head:Operation2 tail:(_ (">" / "<" / ">=" / "<=") _ Operation2)* {
+  head:Operation2 tail:(_ ("==" / ">" / "<" / ">=" / "<=") _ Operation2)* {
         // left to right
     return tail.reduce(function(result, element) {
       return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
