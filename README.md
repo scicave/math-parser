@@ -18,6 +18,7 @@ const mathParser = require('@scicave/math-parser'); /*
   }
 */
 ```
+
 Examples: 
 ```js
 
@@ -32,12 +33,37 @@ console.log(mathParser.parse('2long_var_name', { singleCharName: false, }));
 // xlong_var_name is considered as one var not automult
 console.log(mathParser.parse('xlong_var_name', { singleCharName: false, }));
 
-console.log(mathParser.parse('f(x).someProperty.fn(y).result ^ 2  \n!', { functions: ['f'] }));
+// member expressions and matrices,,, "&&" logic operator
+console.log(mathParser.parse('f(x).someProperty ^ 2 && [1,2,3; 5,6,7]', { functions: ['f'] }));
 
-// strict is false by default so this is true, unlike the previous parsing process
+// will throw error
+console.log(mathParser.parse('f(x).someProperty.fn(y).result ^ 2  \n!', {
+  functions: ['f'],
+  extra: { memberExpressions: false }
+}));
+
+// strict is false by default so this is parsed correctly
+// without passing function = ['f'] to options 
 console.log(mathParser.parse('f().someProperty.fn(y).result ^ 2  \n!'));
 
 ```
+
+## Operators Schema
+
+|Operator|Precedence|Associativity|
+|------|------|-------|
+|`!`|5|N/A|
+|`^`|4|left-to-right|
+|`*`|3|left-to-right|
+|`/`|3|left-to-right|
+|`+`|2|left-to-right|
+|`-`|2|left-to-right|
+|`!=`|1|left-to-right|
+|`==`|1|left-to-right|
+|`>=`|1|left-to-right|
+|`<=`|1|left-to-right|
+|`>`|1|left-to-right|
+|`<`|1|left-to-right|
 
 # Options
 
