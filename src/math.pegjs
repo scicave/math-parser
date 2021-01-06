@@ -72,9 +72,9 @@
   
 }
 
-Expression "expression" = _ expr:Operation11 _ { return expr; }
+Expression "expression" = _ expr:Operation1 _ { return expr; }
 
-Operation11 "operation or factor" = 
+Operation1 "operation or factor" = 
   head:Operation12 tail:(_ "=" _ Operation12)* {
         // left to right
     return tail.reduce(function(result, element) {
@@ -82,23 +82,7 @@ Operation11 "operation or factor" =
     }, head);
   }
 
-Operation12 "operation or factor" = 
-  head:Operation13 tail:(_ "||" _ Operation13)* {
-        // left to right
-    return tail.reduce(function(result, element) {
-      return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
-    }, head);
-  }
-
-Operation13 "operation or factor" = 
-  head:Operation14 tail:(_ "&&" _ Operation14)* {
-        // left to right
-    return tail.reduce(function(result, element) {
-      return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
-    }, head);
-  }
-
-Operation14 "operation or factor" = 
+Operation2 "operation or factor" = 
   head:Operation2 tail:(_ ("==" / ">" / "<" / ">=" / "<=") _ Operation2)* {
         // left to right
     return tail.reduce(function(result, element) {
@@ -106,23 +90,23 @@ Operation14 "operation or factor" =
     }, head);
   }
 
-Operation2 "operation or factor" =
-  head:Operation3 tail:(_ ("+" / "-") _ Operation3)* {
-        // left to right
-    return tail.reduce(function(result, element) {
-      return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
-    }, head);
-  }
-
 Operation3 "operation or factor" =
-  head:Operation4 tail:(_ ("*" / "/") _ Operation4)* {
+  head:Operation4 tail:(_ ("+" / "-") _ Operation4)* {
         // left to right
     return tail.reduce(function(result, element) {
       return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
     }, head);
   }
 
-Operation4 "operation or factor" = /// series of multiplication or one "Factor"
+Operation4 "operation or factor" =
+  head:Operation5 tail:(_ ("*" / "/") _ Operation5)* {
+        // left to right
+    return tail.reduce(function(result, element) {
+      return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
+    }, head);
+  }
+
+Operation5 "operation or factor" = /// series of multiplication or one "Factor"
   head:(Exp) tail:(_ ExpBNN)* {
     return tail.reduce(function(result, element) {
       return createNode("automult" , [result, element[1]]);
