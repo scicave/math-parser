@@ -53,8 +53,11 @@ expect.extend({
     }
 
     function _check(n, s, nPath, sPath) {
+
+      if (nPath !== sPath) return fail(`AST paths are different: ${nPath},,, ${sPath}`);
+
       if (!(n && s)) return;
-      if (!isNaN(s)) {
+      if (typeof s === 'number') {
         s = { type: "number", value: s };
       } else if (typeof s === "string") {
         s = { type: "id", name: s };
@@ -68,7 +71,7 @@ expect.extend({
           if (typeof n[i] !== 'object')
             if(n[i] !== s[i]) return fail(`${nPath}[${i}] !== ${sPath}[${i}]`);
             else continue;
-          const c = _check(n[i], s[i], nPath + `[${i}]`, sPath + `[${i}]`);
+          let c = _check(n[i], s[i], nPath + `[${i}]`, sPath + `[${i}]`);
           if (c) return c; // here a problem is found
         }
         return;
@@ -89,7 +92,7 @@ expect.extend({
       }
 
       if (s.args && n.args) {
-        _check(n.args, s.args, nPath + "[args]", sPath + "[args]");
+        return _check(n.args, s.args, nPath + "[args]", sPath + "[args]");
       } else if (s.args || n.args) {
         if (s.args) {
           return failed(`${sPath} in struct has args but ${nPath} in node doesn't`, node);
@@ -156,12 +159,13 @@ function doTest(on, title) {
       on.forEach((__test) => {
         let title = getTitle(__test);
         let fn = () => {
-          if (__test.error) 
+          if (__test.error) {
             expect(()=>parser.parse(__test.math, __test.parserOptions)).toThrow(
               __test.errorType === "syntax" ? parser.SyntaxError : r.errorType
             );
-          else
+          } else {
             expect(parser.parse(__test.math, __test.parserOptions)).toHaveStructure(__test.struct);
+          }
         };
         if (__test.only) 
           test.only(title, fn);

@@ -172,6 +172,12 @@ module.exports = [
   },
 
   {
+    title: "should parse: as matrix",
+    math: "[a, b, ]",
+    strucr: node.matrix([["a", "b"]])
+  },
+
+  {
     math: "f(1,,4, ...)",
     parserOptions: { functions: ["f"] },
     struct: node.F("f", [1, null, 4, node.ellipsis])
