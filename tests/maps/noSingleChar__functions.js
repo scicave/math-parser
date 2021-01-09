@@ -54,11 +54,11 @@ module.exports = [
   },
 
   {
-    math: "fn(variable_name &&2 )(3/2)",
+    math: "fn(variable_name ^ 2 )(3/2)",
     parserOptions: { singleCharName: false, functions: ['fn'] },
     struct: node.am([
       node.F("fn", [
-        node.op("&&", ["variable_name", 2])
+        node.op("^", ["variable_name", 2])
       ]),
       node.op("/", [3,2])
     ]),

@@ -30,6 +30,8 @@
      }
   });
   
+  let hasTrailing;
+
   preParse(input, peg$computeLocation, error);
 
   function createNode(...args){
@@ -50,32 +52,76 @@
   }
 
   function handleBlock(node, o, c) {
+
+    // node is expr or 1d array or 2d array
+    // validation, [), (], {}, [], () are allowed
     if (
       o === '[' && c === "}" ||
       o === '{' && c === "]" ||
       o === '(' && c === "}" ||
       o === '{' && c === ")"
     ) error(`unexpected closing for the block`);
-    if(Array.isArray(node)) {
-      if (node.length === 2 && options.extra.intervals)
-        return createNode("interval", node, { startInlusive: o==="[", endInclusive: c==="]" });
+
+    // set
+    if (Array.isArray(node) && Array.isArray(node[0])) {
+      if (o === "[" && c === "]") {
+        // matrix
+        let rows = node.length, cols = node[0].length;
+        for (let n of node)
+          if (n.length !== cols)
+            error("matrix has different column sizes");
+        return createNode("matrix", node, { shape: [ rows, cols ] });
+      }
+      error("unexpected \";\" separetor in a block " + `"${o}${c}"`);
+    }
+
+    // now node is 1d array or expr
+
+    // sets
+    if (o === "{") { // c is "}"
+      // set with one item
+      return createNode("set", Array.isArray(node) ? node: [node]);
+    }
+
+    // tuple or interval or set
+    if (Array.isArray(node)) {
+      if (node.length === 2 && options.extra.intervals && !hasTrailing)
+        // make sure not have blank terms or "..."
+        if (!(node[0] === null || node[1] === null ||
+              node[0] === "..." || node[1] === "..."))
+          return createNode("interval", node, { startInclusive: o==="[", endInclusive: c==="]" });
+      // matrix
+      if (o === "[" && c === "]") 
+        return createNode("matrix", [node]);
+      // all possible expressions for "[]" are consumed here
       if (o === "[" || c === "]") error(`unexpected closing for the block`);
       if (node.length === 2 && !options.extra.tuples)
         return error("neither tuples nor intervals are allowed");
       return createNode("tuple", node);
     }
-    if (o === "[" || c === "]") error(`unexpected closing for the block`);
+
+    // now node is expr
+
+    // it is matrix
+    if (o === "[" && c === "]")
+      return createNode("Matrix", [[node]]);
+
+    // extra validation, we are now dealing with "()"
+    if (o === "[" || c === "]")
+      error(`unexpected brackets opening and closing`);
+
     return options.keepParentheses
       ? createNode("parentheses", [node])
       : node;
+
   }
-  
+
 }
 
 Expression "expression" = _ expr:Operation1 _ { return expr; }
 
 Operation1 "operation or factor" = 
-  head:Operation12 tail:(_ "=" _ Operation12)* {
+  head:Operation2 tail:(_ "=" _ Operation2)* {
         // left to right
     return tail.reduce(function(result, element) {
       return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
@@ -83,7 +129,7 @@ Operation1 "operation or factor" =
   }
 
 Operation2 "operation or factor" = 
-  head:Operation2 tail:(_ ("==" / ">" / "<" / ">=" / "<=") _ Operation2)* {
+  head:Operation3 tail:(_ ("==" / ">" / "<" / ">=" / "<=") _ Operation3)* {
         // left to right
     return tail.reduce(function(result, element) {
       return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
@@ -99,20 +145,19 @@ Operation3 "operation or factor" =
   }
 
 Operation4 "operation or factor" =
-  head:Operation5 tail:(_ ("*" / "/") _ Operation5)* {
+  head:AutoMult tail:(_ ("*" / "/") _ AutoMult)* {
         // left to right
     return tail.reduce(function(result, element) {
       return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
     }, head);
   }
 
-Operation5 "operation or factor" = /// series of multiplication or one "Factor"
+AutoMult "operation or factor" = /// series of multiplication or one "Factor"
   head:(Exp) tail:(_ ExpBNN)* {
     return tail.reduce(function(result, element) {
       return createNode("automult" , [result, element[1]]);
     }, head);
   }
-
 
 Exp "operation or factor" =
   head:Factor tail:(_ "^" _ Factor)* {
@@ -139,7 +184,7 @@ Factor
 
 factorWithoutNumber =
   base:(
-    MemberExpression / Functions / TupleOrExprOrParenOrIntervalOrSet /
+    MemberExpression / Functions / TupleOrExprOrParenOrIntervalOrSetOrMatrix /
     BlockVBars / NameNME
   ) _ fac:factorial? {
     if (fac) base = createNode('postfix operator', [base], {name: '!'});
@@ -212,12 +257,12 @@ MultiCharFunction =
     return createNode('function', a, { name });
   }
 
-TupleOrExprOrParenOrIntervalOrSet =
+TupleOrExprOrParenOrIntervalOrSetOrMatrix =
   o:("("/"["/"{")
-  delmOrExpr:commaExpression
+  arr2dOr1dArrOrExpr:commaSemiColonExpression
   c:(")"/"]"/"}")
   {
-    return handleBlock(delmOrExpr, o, c);
+    return handleBlock(arr2dOr1dArrOrExpr, o, c);
   }
 
 functionParentheses =
@@ -230,24 +275,56 @@ functionParenthesesNotVoid =
     return Array.isArray(a) ? a : [a];
   }
 
+commaSemiColonExpression
+  = head:commaExpression tail:(_ ";" _ commaExpression)* {
+    if (tail.length) {
+      head = Array.isArray(head) ? head : [head];
+      tail = tail.map(e=>Array.isArray(e[3]) ? e[3] : [e[3]]);
+      // tail now is a 2d array
+      return [head].concat(tail); // return 2d array
+    }
+    return head;
+  }
+
 // there is spaces around expressions already no need for _ rule
-commaExpression
-  = head:Expression tail:("," (Expression / "..."/ _))* {
+commaExpression = body:(
+
+    head:Expression
+    tail:("," a:(Expression / _ "..." _ { return "..." } / _ { return "__white__space__" }) { return a })*
+    {
+      return { head, tail };
+    }
+
+  / head:(_ "..." _ { return "..." } / _ { return "__white__space__" })
+    tail:("," a:(Expression / _ "..." _ { return "..." } / _ { return "__white__space__" }) { return a })+
+    {
+      return { head, tail };
+    }
+
+  ) {
+      let { head, tail } = body;
+      hasTrailing = false; // reset it
       if (tail.length){
-        if(tail[tail.length-1] === "..." && !options.extra.ellipsis)
-          error("ellipsis at the end is not allow");
-        if(/^\s*$/.test(tail[tail.length-1]) && !options.extra.trailingComma)
-          tail.pop();
+        tail.unshift(head);
+        if("__white__space__" === tail[tail.length-1])
+          if(options.extra.trailingComma) {
+            hasTrailing = true;
+            tail.pop();
+          }
+          else
+            error("trailing comma is not allowed")
+        if("__white__space__" === tail[tail.length-1])
+          error("blank terms are not allowed at the end");
         for (let i=0; i<tail.length-1; i++) {
-          if(tail[i] === "..." && options.extra.ellipsis !== 2)
-            error("ellipsis at the middle is not allow");
-          if(/^\s*$/.test(tail[i])) {
+          if(tail[i] === "..." && !options.extra.ellipsis)
+            error("ellipsis is not allow");
+          if(tail[i] === "__white__space__") {
             if(!options.extra.blankTerms)
               error("blank terms are't allowed");
-            head[i] = null;
+            tail[i] = null;
           }
         }
-        return [head].concat(tail.map(a => a[1]));
+        return tail;
       }
       return head;
     }

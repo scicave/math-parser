@@ -39,6 +39,7 @@ Node.types = {
   MEMBER_EXPRESSION: "member expression",
   PARENTHESES: "parentheses",
   INTERVAL: "interval",
+  MATRIX: "matrix",
   TUPLE: "tuple",
   SET: "set",
 };

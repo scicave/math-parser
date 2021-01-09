@@ -28,8 +28,26 @@ module.exports = [
   },
 
   {
-    math: "(1, 3, \n4)",
-    struct: node.tuple([1,3,4]),
+    math: "2x^4y",
+    struct: node.am([
+      node.am([
+        2,
+        node.op("^", ["x", 4])
+      ]),
+      "y"
+    ])
+  },
+
+  {
+    math: "2x^4y!",
+    struct: node.am([
+      node.am([
+        2,
+        node.op("^", ["x", 4])
+      ]),
+      node.pOP("!", ["y"])
+    ])
   },
 
 ]
+

@@ -2,6 +2,7 @@ class NodeCreator {
   // take a look at the valid Node types at src/Node.js
   constructor(options) {
     this.setOptions(options);
+    this.ellipsis = "...";
   }
 
   setOptions(options = {}) {
@@ -105,9 +106,14 @@ class NodeCreator {
     return { type: "set", args };
   }
 
-  interval(args, extra) {
-    if (!Array.isArray(args)) this.invalidArgs("set");
-    return { type: "set", args, ...extra };
+  interval(args, extra={}) {
+    if (!Array.isArray(args)) this.invalidArgs("interval");
+    return { type: "interval", args, ...extra };
+  }
+
+  matrix(args) {
+    if (!Array.isArray(args) || args.find(i=>!Array.isArray(i))) this.invalidArgs("matrix");
+    return { type: "matrix", args };
   }
 
 }

@@ -2,19 +2,23 @@ const basic = require("./basic");
 const singleChar__memExpr = require("./singleChar__memExpr");
 const singleChar__functions = require("./singleChar__functions");
 const singleChar__autoMult = require("./singleChar__autoMult");
-// const singleChar__BID = require("./singleChar__BIV");
+const singleChar__BID = require("./singleChar__BID");
 const noSingleChar__memExpr = require("./noSingleChar__memExpr");
 const noSingleChar__functions = require("./noSingleChar__functions");
 const noSingleChar__autoMult = require("./noSingleChar__autoMult");
-// const noSingleChar__BID = require("./noSingleChar__BIV");
+const noSingleChar__BID = require("./noSingleChar__BID");
 const strict = require("./strict");
+const extra = require("./extra");
 const keepParentheses = require("./keepParentheses");
 
 module.exports = {
   basic,
   options: {
+    
     strict,
     keepParentheses,
+    extra,
+
     "singleCharName=true": {
       "member expression": singleChar__memExpr,
       "function": singleChar__functions,
@@ -28,6 +32,7 @@ module.exports = {
       "auto multiplication": noSingleChar__autoMult,
       // "builtInVariables": noSingleChar__BID,
     }
+
   }
 };
 

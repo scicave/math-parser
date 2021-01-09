@@ -60,31 +60,36 @@ expect.extend({
         s = { type: "id", name: s };
       }
 
+      if (Array.isArray(n) && Array.isArray(s)) {
+        if (s.length !== n.length) {
+          return failed(`${sPath} in struct and ${nPath} in node args has different lengths`, node);
+        }
+        for (let i = 0; i < s.length; i++) {
+          if (typeof n[i] !== 'object')
+            if(n[i] !== s[i]) return fail(`${nPath}[${i}] !== ${sPath}[${i}]`);
+            else continue;
+          const c = _check(n[i], s[i], nPath + `[${i}]`, sPath + `[${i}]`);
+          if (c) return c; // here a problem is found
+        }
+        return;
+      } else if (Array.isArray(n) || Array.isArray(s)) {
+        return failed(`one of ${nPath},,, ${sPath},,, is array but the other is not`);
+      }
+
+      // now n and s must be objects { type: string, args: Array, ... }
       if (!(s instanceof Object)) {
         return failed(`"struct" is type of ${typeof s}, toHaveStructure checks the match between parser.Node and object.`, node);
       }
 
-      nPath = (nPath ? nPath + "." : "") + n.type;
-      sPath = (sPath ? sPath + "." : "") + s.type;
+      nPath = (nPath ? nPath + "[" : "[") + n.type + "]";
+      sPath = (sPath ? sPath + "[" : "[") + s.type + "]";
 
       if (!n.check(s)) {
-        let _n = { ...n };
-        let _s = { ...s };
-        delete _n.args;
-        delete _s.args;
-        _n = JSON.stringify(_n);
-        _s = JSON.stringify(_s);
         return failed(`properties of ${nPath} in node, don't match these of ${sPath} of struct`, node);
       }
 
       if (s.args && n.args) {
-        if (s.args.length !== n.args.length) {
-          return failed(`${sPath} in struct and ${nPath} in node args has different lengths`, node);
-        }
-        for (let i = 0; i < s.args.length; i++) {
-          const c = _check(n.args[i], s.args[i], nPath, sPath);
-          if (c) return c; // here a problem is found
-        }
+        _check(n.args, s.args, nPath + "[args]", sPath + "[args]");
       } else if (s.args || n.args) {
         if (s.args) {
           return failed(`${sPath} in struct has args but ${nPath} in node doesn't`, node);
@@ -129,9 +134,15 @@ describe("testing preParse module", () => {
 
 });
 
-function mAsTitle(t) {
+function getTitle(__test) {
   // return math.replace(/\n/g, '\\n');
-  return (t.error ? "should throw: " : "should parse: ") + JSON.stringify(t.math);
+  let mkt = (m) => `\n\t\t\t${JSON.stringify(m)}`;
+  if (__test.title) { 
+    let t = mkt(__test.math);
+    return __test.title + t;
+  }
+  return (__test.error ? "should throw: " : "should parse: ") +
+    JSON.stringify(__test.math);
 }
 
 // our tests js object, stored in `map`
@@ -142,19 +153,19 @@ function mAsTitle(t) {
 function doTest(on, title) {
   describe(title, ()=>{
     if (on instanceof Array) {
-      on.forEach((t) => {
-        let title = t.title ? `${t.title}\n\t\t\t${t.math}` : mAsTitle(t);
+      on.forEach((__test) => {
+        let title = getTitle(__test);
         let fn = () => {
-          if (t.error) 
-            expect(()=>parser.parse(t.math, t.parserOptions)).toThrow(
-              t.errorType === "syntax" ? parser.SyntaxError : r.errorType
+          if (__test.error) 
+            expect(()=>parser.parse(__test.math, __test.parserOptions)).toThrow(
+              __test.errorType === "syntax" ? parser.SyntaxError : r.errorType
             );
           else
-            expect(parser.parse(t.math, t.parserOptions)).toHaveStructure(t.struct);
+            expect(parser.parse(__test.math, __test.parserOptions)).toHaveStructure(__test.struct);
         };
-        if (t.only) 
+        if (__test.only) 
           test.only(title, fn);
-        else (!t.skip)
+        else if (!__test.skip)
           test(title, fn);
       });
     } else if (typeof on === 'object') {
@@ -168,3 +179,4 @@ function doTest(on, title) {
 }
 
 doTest(testsMap, "test parse function");
+
