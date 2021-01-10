@@ -22,6 +22,25 @@ module.exports = [
   },
 
   {
+    math: "2pi",
+    struct: node.am([2, "pi"]),
+  },
+
+  {
+    math: "2^2pi",
+    struct: node.op("^", [2,
+      node.am([2, "pi"]),
+    ]),
+  },
+
+  {
+    math: "2^2pi!",
+    struct: node.op("^", [2,
+      node.am([2, node.pOP("!", ["pi"])]),
+    ]),
+  },
+
+  {
     math: "1+pi()",
     error: true, errorType: "syntax"
   },

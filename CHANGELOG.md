@@ -1,4 +1,4 @@
-# 🌟 10 Jan 2021, v4.0
+# 🌟 11 Jan 2021, v4.0
 
 ## Breaking
 
@@ -15,14 +15,15 @@
   * `(1, 2,)`: is a tuple, parsed if `extra.trailingComma ` is `true`
   * `[, a]`: is a matrix, parsed if `extra.blankTerms` is `true`
   * `(, a)`: is a tuple, parsed if `extra.blankTerms` is `true`
+* Remove option `strict`.
 
 ## Add
+- `options.keepParen`: if you want to parsed parenthesis as nodes in the AST, `{ type: "parenthesis" }`.
 - `options.extra.matrices`
 - `options.builtInIDs`
   - `infinity, pi, phi`: these has specific values or notions in maths.
   - `phix` is considered as automult of single-char ids, if `options.singleCharName=true`, otherwise it is node of type "id" with name "phix".
-  - when strict the previous expression will be automult of single-char ids, equivalent to `p*h*i*x`.  
-- When `options.strict === true`: the following expression is valid `1+3(2-3sqrt(pi)`.
+  - when strict the previous expression will be automult of single-char ids, equivalent to `p*h*i*x`. 
 
 # 3 Jan 2021, v3.0.0
 

@@ -38,7 +38,7 @@ module.exports = [
   {
     title: "should use function id as reference (or variable) when strict=false",
     math: "(2longFuncName! + x)",
-    parserOptions: { singleCharName: false, keepParentheses: true, functions: ['longFuncName'] },
+    parserOptions: { singleCharName: false, keepParen: true, functions: ['longFuncName'] },
     struct: node.paren([node.op("+", [
       node.am([2, node.pOP("!", ["longFuncName"])]),
       "x"

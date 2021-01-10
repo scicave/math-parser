@@ -1,20 +1,11 @@
 const { node } = require("./utils");
 
 module.exports = [
-  // incase of using methods from object, member expression
-  // tests are performed there in the memExpr section
-  {
-    title: "should parse: f() as function, strict=flase, options.function=[]",
-    math: "f()",
-    struct: node.F("f", []),
-  },
 
   {
-    title: "should throw: error f(), strict=true, options.function=[]",
+    title: "should throw: error f(), options.function=[]",
     math: "f()",
-    parserOptions: { strict: true },
-    error: true,
-    errorType: "syntax",
+    error: true, errorType: "syntax"
   },
 
   {
@@ -48,16 +39,6 @@ module.exports = [
   },
 
   {
-    title: "should parse: function with no arguments, no parserOptions, 2f()!",
-    math: "2f()!",
-    struct: node.am([
-      2,
-      node.pOP("!", [node.F("f", [])])
-    ])
-  },
-
-  {
-    title: "function with no arguments, with parserOptions, 2f()!",
     math: "2f()!",
     parserOptions: { functions: ["f"] },
     struct: node.am([

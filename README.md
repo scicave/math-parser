@@ -64,18 +64,19 @@ console.log(mathParser.parse('f().someProperty.fn(y).result ^ 2  \n!'));
 
 |Operator|Precedence|Associativity|
 |------|------|-------|
-|`!`|5|N/A|
-|`^`|4|left-to-right|
-|`*`|3|left-to-right|
-|`/`|3|left-to-right|
-|`+`|2|left-to-right|
-|`-`|2|left-to-right|
-|`!=`|1|left-to-right|
-|`==`|1|left-to-right|
-|`>=`|1|left-to-right|
-|`<=`|1|left-to-right|
-|`>`|1|left-to-right|
-|`<`|1|left-to-right|
+|`!`|6|N/A|
+|`^`|5|left-to-right|
+|`*`|4|left-to-right|
+|`/`|4|left-to-right|
+|`+`|3|left-to-right|
+|`-`|3|left-to-right|
+|`!=`|2|left-to-right|
+|`==`|2|left-to-right|
+|`>=`|2|left-to-right|
+|`<=`|2|left-to-right|
+|`>`|2|left-to-right|
+|`<`|2|left-to-right|
+|`=`|1|left-to-right|
 
 # Options
 
@@ -93,19 +94,10 @@ To perform multiplication in these cases:
 
 Type = `boolean`, default: `true`.
 
-Maths conventionally works with single char named variables and constants, but in programming languages you have freedom. The convention in programming is to use multi-char named identifier.
-For example, if you want to use "pi" or "phi", etc, you have to set this to `options.builtInIDs = ["pi", "phi"]`, it is set by default.  
+Maths conventionally works with single char named variables and constants, but in programming languages you have freedom. The convention in programming is to use multi-char named identifier. See: [options.builtInIDs](#.builtInIDs).
 
-When a member expression is found, properties and methods are allowed to be multi-char, despite of `options.singleCharName`
+When a member expression is found, properties and methods are allowed to be multi-char, despite of `options.singleCharName`, see: `options.extra.memberExpressions`.
 
-## .strict
-
-Type = `boolean`, default = `false`;
-
-When false:
-
-- `f()`: is parsed as function whether or not it exists in `options.functions`
-- `sin + 2`: you can you functions identifiers as references, with no arguments.
 
 ## .extra
 
@@ -149,11 +141,8 @@ Type = `Array<string>`, default = `[]`;
 When `autoMult` is `true`, some expression like `f(x)` will be considered
 as multiplication `f*(x)`, in order to parse it as a function with name = "f",
 you can pass `options.functions = ['f']`.
-Notice that when `strict = false`, some expression such as `f()`,
-an id followed by empty parentheses, will be parsed with type = "function"
-whether or not `options.functions` includes "f".
+When parsing `a.method(...)`, regardless of `singleCharName`, method names will be always multi-char name.
 
-When parsing `a.method(...)`, regardless of options, `method` will be always.
 ```
         member expression
              _/\_
@@ -166,7 +155,7 @@ When parsing `a.method(...)`, regardless of options, `method` will be always.
 
 ## .builtInIDs
 
-Type = `Array<string>`, default = `["pi", "phi"]`;
+Type = `Array<string>`, default = `["infinity", "pi", "phi"]`;
 
 To use multi-char names when setting [`singleCharName`](#.singleCharName) to true, for example:
 
@@ -174,7 +163,14 @@ To use multi-char names when setting [`singleCharName`](#.singleCharName) to tru
 | ------------- | ------------- | -------------- |
 | `1 + pix`  | `1 + p*i*x`|`true`|
 |`1 + pi`| `1 + pi`|`true`|
-|`1 + pix` |  `1 + pix`|`singleCharName = false`|
+|`1 + pix` |  `1 + pix`|`false`|
+
+## .keepParen
+
+Type = `boolean`, default = `false`.
+
+If you want to make grouping parenthesis nodes in the result AST, `{ type: 'parenthesis', ... }`.
+
 
 # Unsure about
 

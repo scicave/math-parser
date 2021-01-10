@@ -9,9 +9,10 @@ module.exports = [
   },
 
   {
-    math: "1+xpi",
-    parserOptions: { singleCharName: false },
-    struct: node.op("+", [1, "xpi"])
+    title: "should parse: mine as builtInId when passed through options",
+    math: "1+mine",
+    parserOptions: { singleCharName: false, builtInIDs: ["mine"] },
+    struct: node.op("+", [1, "mine"])
   },
 
   {
@@ -21,9 +22,16 @@ module.exports = [
   },
 
   {
+    math: "1+xpi",
+    parserOptions: { singleCharName: false },
+    struct: node.op("+", [1, "xpi"])
+  },
+
+  {
     math: "1+pi()",
     parserOptions: { singleCharName: false },
-    error: true, errorType: "syntax"
+    error: true,
+    errorType: "syntax"
   },
 
 ];

@@ -96,6 +96,22 @@ module.exports = [
   },
 
   {
+    math: " 2x^4 ysinx!",
+    struct: node.am([
+      2,
+      node.op("^", [
+        "x",
+        node.am([
+          node.am([4, "y"]),
+          node.pOP("!", [
+            node.BIF("sin", ["x"])
+          ])
+        ])
+      ])
+    ])
+  },
+
+  {
     math: "2x^-45.1y^sinx",
     struct: node.am([
       2,

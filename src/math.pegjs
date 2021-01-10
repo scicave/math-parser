@@ -1,11 +1,13 @@
+// TODO: correct how built in function are dealed
+// specially when using to without parenthesis after it
+
 {
   options = Object.assign({
-    strict: false,
     autoMult: true,
     singleCharName: true,
-    keepParentheses: false,
+    keepParen: false,
     functions: [],
-    builtInIDs: ["pi", "phi"],
+    builtInIDs: ["infinity", "pi", "phi"],
     builtInFunctions: [
       "sinh", "cosh", "tanh", "sech",  "csch",  "coth",  
       "arsinh", "arcosh", "artanh", "arsech",  "arcsch", "arcoth",
@@ -14,9 +16,6 @@
       "arcsin", "arccos", "arctan", "arcsec",  "arccsc",  "arccot", 
       "ln", "log", "exp", "floor", "ceil", "round", "random", "sqrt"
     ],
-    additionalFunctions: [
-      
-    ]
   }, options, {
     extra: {
       memberExpressions: true,
@@ -30,9 +29,24 @@
      }
   });
   
-  let hasTrailing;
+  let hasTrailing, factorNameMatched, builtInFunctionTitle;
 
   preParse(input, peg$computeLocation, error);
+
+  function pushChar(c, mode) {
+    if (mode === "builtInFunctions") {
+      let newTitle = builtInFunctionTitle + c, found = false;
+      for (let t of options.builtInFunctions) {
+        if (t.length === newTitle.length && t === newTitle ||
+            t.length > newTitle.length && t.slice(0, newTitle.length) === newTitle) {
+          found = true; break;
+        }
+      }
+      if (!found) return false;
+      builtInFunctionTitle = newTitle;
+      return true;
+    }
+  }
 
   function createNode(...args){
     let n = new Node(...args);
@@ -110,7 +124,7 @@
     if (o === "[" || c === "]")
       error(`unexpected brackets opening and closing`);
 
-    return options.keepParentheses
+    return options.keepParen
       ? createNode("parentheses", [node])
       : node;
 
@@ -153,7 +167,7 @@ Operation4 "operation or factor" =
   }
 
 Operation5 "operation or factor" =
-  head:(BuiltInIDs / AutoMult) tail:(_ "^" _ Operation5)* {
+  head:AutoMult tail:(_ "^" _ Operation5)* {
     // left to right
     return tail.reduce(function(base, exponent) {
       let exp = exponent[3];
@@ -168,6 +182,7 @@ Operation5 "operation or factor" =
 
 AutoMult "operation or factor" = /// series of multiplication or one "Factor"
   head:Factor tail:(_ FactorNotNumber)* {
+    factorNameMatched = false;
     return tail.reduce(function(result, element) {
       return createNode("automult" , [result, element[1]]);
     }, head);
@@ -176,18 +191,21 @@ AutoMult "operation or factor" = /// series of multiplication or one "Factor"
 Factor = FactorNumber / FactorNotNumber
 
 FactorNumber =
-  base:Number _ fac:factorial? {
-    if (fac) base = createNode('postfix operator', [base], {name: '!'});
-    return base;
+  n:Number _ fac:factorial? {
+    if (fac) n = createNode('postfix operator', [n], {name: '!'});
+    return n;
   }
 
 FactorNotNumber =
-  base:(
+  f:(
+    // !char to avoid take the first term "pi" of "pix"
+    &{ return !factorNameMatched } bid:BuiltInIDs !char { return bid } /
     MemberExpression / Functions / TupleOrExprOrParenOrIntervalOrSetOrMatrix /
     BlockVBars / NameNME
   ) _ fac:factorial? {
-    if (fac) base = createNode('postfix operator', [base], {name: '!'});
-    return base;
+    factorNameMatched = f.type === 'id';
+    if (fac) f = createNode('postfix operator', [f], {name: '!'});
+    return f;
   }
 
 Functions "functions" =
@@ -196,23 +214,21 @@ Functions "functions" =
 BuiltInFunctions =
   name:builtInFuncsTitles _ exp:SuperScript? _ args:builtInFuncArgs {
     let func = createNode('function', args, {name, isBuiltIn:true});
-    if(!exp) return func;
-    else return createNode('operator', [func, exp], {name: '^', operatorType: 'infix'});
+    if(exp) func.exp = exp;
+    return func;
   }
 
-// builtInFuncsTitles = 
 builtInFuncsTitles =
-  &{ return options.singleCharName } n:(
-    // CAUTION: we have to use them literally here to enable
-    // sinx  =>  node.bunltInFunction("sin", ["x"]);
-    "sinh"/ "cosh"/ "tanh"/ "sech"/  "csch"/  "coth"/  
-    "arsinh"/ "arcosh"/ "artanh"/ "arsech"/ "arcsch"/ "arcoth"/
-    "sin"/ "cos"/ "tan"/ "sec"/ "csc"/  "cot"/
-    "asin"/ "acos"/ "atan"/ "asec"/ "acsc"/  "acot"/
-    "arcsin"/ "arccos"/ "arctan"/ "arcsec"/  "arccsc"/ "arccot"/ 
-    "ln"/ "log"/ "exp"/ "floor"/ "ceil"/ "round"/ "random" / "sum" / "sqrt"
-  ) { return n; } /
-  n:$multiCharName &{ return options.builtInFunctions.indexOf(n) > -1 } { return n; }
+  &{ builtInFunctionTitle = ''; return options.singleCharName }
+  (c:char &{ return pushChar(c, "builtInFunctions") } { return c })+
+  // it may not be a complete title
+  &{ return options.builtInFunctions.indexOf(builtInFunctionTitle) > -1 } {
+    // increate pos by the title length
+    /* peg$currPos += builtInFunctionTitle.length; */
+    return builtInFunctionTitle;
+  } /
+  // singleCharName = false
+  n:$multiCharName &{ return options.builtInFunctions.indexOf(n) > -1 } { return n }
 
 builtInFuncArgs = a:(
     (
@@ -240,8 +256,8 @@ Function =
     }) { return a[0] } /
     voidParentheses &{
       let exists = options.functions.indexOf(name)>-1;
-      if (!exists && options.strict)
-        error("unexpected empty a after a non-function");
+      if (!exists)
+        error(`"${name}" is not a function, and autoMult is not activated`);
       return true; // in case not strict mode, it is a valid function regardless of `exists`
     } { return [] }
   ) {
