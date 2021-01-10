@@ -21,31 +21,93 @@ module.exports = [
 
   {
     math: "5^2x!",
-    struct: node.am([
-      node.op("^", [5,2]),
-      node.pOP("!", ["x"])
+    struct: node.op("^", [
+      5,
+      node.am([
+        2,
+        node.pOP("!", ["x"])
+      ])
     ]),
+  },
+
+  {
+    math: "2xysina(2)",
+    struct: node.am([
+      node.am([
+        node.am([
+          node.am([2,"x"]),
+          "y"
+        ]),
+        node.BIF("sin", ["a"])
+      ]),
+      2
+    ])
+  },
+
+  {
+    title: "should parse: \"a\" as function when defined in options.functions",
+    math: "2xysina(2)",
+    parserOptions: { functions: ["a"] },
+    struct: node.am([
+      node.am([
+        node.am([2,"x"]),
+        "y"
+      ]),
+      node.BIF("sin", [node.F("a", [2])])
+    ])
   },
 
   {
     math: "2x^4y",
     struct: node.am([
-      node.am([
-        2,
-        node.op("^", ["x", 4])
-      ]),
-      "y"
+      2,
+      node.op("^", [
+        "x",
+        node.am([4, "y"])
+      ])
     ])
   },
 
   {
     math: "2x^4y!",
     struct: node.am([
-      node.am([
-        2,
-        node.op("^", ["x", 4])
-      ]),
-      node.pOP("!", ["y"])
+      2,
+      node.op("^", [
+        "x",
+        node.am([4, node.pOP("!", ["y"])])
+      ])
+    ])
+  },
+
+  {
+    math: "2x^4ysinx!",
+    struct: node.am([
+      2,
+      node.op("^", [
+        "x",
+        node.am([
+          node.am([4, "y"]),
+          node.pOP("!", [
+            node.BIF("sin", ["x"])
+          ])
+        ])
+      ])
+    ])
+  },
+
+  {
+    math: "2x^-45.1y^sinx",
+    struct: node.am([
+      2,
+      node.op("^", [
+        "x",
+        node.am([
+          -45.1,
+          node.op("^", [
+            "y", node.BIF("sin", ["x"])
+          ])
+        ])
+      ])
     ])
   },
 

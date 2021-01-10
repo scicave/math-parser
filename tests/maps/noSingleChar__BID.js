@@ -15,6 +15,12 @@ module.exports = [
   },
 
   {
+    math: "1+pix",
+    parserOptions: { singleCharName: false },
+    struct: node.op("+", [1, "pix"])
+  },
+
+  {
     math: "1+pi()",
     parserOptions: { singleCharName: false },
     error: true, errorType: "syntax"

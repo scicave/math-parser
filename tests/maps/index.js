@@ -23,14 +23,14 @@ module.exports = {
       "member expression": singleChar__memExpr,
       "function": singleChar__functions,
       "auto multiplication": singleChar__autoMult,
-      // "builtInVariables": singleChar__BID,
+      "builtInVariables": singleChar__BID,
     },
 
     "singleCharName=false": {
       "member expression": noSingleChar__memExpr,
       "functions": noSingleChar__functions,
       "auto multiplication": noSingleChar__autoMult,
-      // "builtInVariables": noSingleChar__BID,
+      "builtInVariables": noSingleChar__BID,
     }
 
   }

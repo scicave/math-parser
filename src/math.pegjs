@@ -5,7 +5,7 @@
     singleCharName: true,
     keepParentheses: false,
     functions: [],
-    builtInVariables: [],
+    builtInIDs: ["pi", "phi"],
     builtInFunctions: [
       "sinh", "cosh", "tanh", "sech",  "csch",  "coth",  
       "arsinh", "arcosh", "artanh", "arsech",  "arcsch", "arcoth",
@@ -129,7 +129,7 @@ Operation1 "operation or factor" =
   }
 
 Operation2 "operation or factor" = 
-  head:Operation3 tail:(_ ("==" / ">" / "<" / ">=" / "<=") _ Operation3)* {
+  head:Operation3 tail:(_ ("==" / "!=" / ">" / "<" / ">=" / "<=") _ Operation3)* {
         // left to right
     return tail.reduce(function(result, element) {
       return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
@@ -145,44 +145,43 @@ Operation3 "operation or factor" =
   }
 
 Operation4 "operation or factor" =
-  head:AutoMult tail:(_ ("*" / "/") _ AutoMult)* {
+  head:Operation5 tail:(_ ("*" / "/") _ Operation5)* {
         // left to right
     return tail.reduce(function(result, element) {
       return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
     }, head);
   }
 
+Operation5 "operation or factor" =
+  head:(BuiltInIDs / AutoMult) tail:(_ "^" _ Operation5)* {
+    // left to right
+    return tail.reduce(function(base, exponent) {
+      let exp = exponent[3];
+      if (base.checkType("automult")) {
+        base.args[1] = createNode('operator' , [base.args[1], exp], {name: "^", operatorType: 'infix'});
+        return base;
+      }
+      else 
+        return createNode('operator' , [base, exp], {name: "^", operatorType: 'infix'});
+    }, head);
+  }
+
 AutoMult "operation or factor" = /// series of multiplication or one "Factor"
-  head:(Exp) tail:(_ ExpBNN)* {
+  head:Factor tail:(_ FactorNotNumber)* {
     return tail.reduce(function(result, element) {
       return createNode("automult" , [result, element[1]]);
     }, head);
   }
 
-Exp "operation or factor" =
-  head:Factor tail:(_ "^" _ Factor)* {
-    // left to right
-    return tail.reduce(function(result, element) {
-      return createNode('operator' , [result, element[3]], { name: element[1], operatorType: 'infix' });
-    }, head);
-  }
+Factor = FactorNumber / FactorNotNumber
 
-// Exp "B_ase is N_ot N_umber: BNN"
-ExpBNN = 
-  head:factorWithoutNumber tail:(_ "^" _ Factor)* {
-    // left to right
-    return tail.reduce(function(result, element) {
-      return createNode('operator' , [result, element[3]], { name: element[1], operatorType: 'infix' });
-    }, head);
-  }
-
-Factor
-  = factorWithoutNumber / base:Number _ fac:factorial? {
+FactorNumber =
+  base:Number _ fac:factorial? {
     if (fac) base = createNode('postfix operator', [base], {name: '!'});
     return base;
   }
 
-factorWithoutNumber =
+FactorNotNumber =
   base:(
     MemberExpression / Functions / TupleOrExprOrParenOrIntervalOrSetOrMatrix /
     BlockVBars / NameNME
@@ -360,6 +359,10 @@ sign
   = '-' / '+'
 
 //////////////
+
+BuiltInIDs = n:$multiCharName &{ return options.builtInIDs.indexOf(n) > -1 } {
+  return createNode("id", null, { name: n, builtIn: true });
+}
 
 Name "name" = MemberExpressionName / NameNME
 

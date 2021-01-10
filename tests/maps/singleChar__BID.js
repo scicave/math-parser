@@ -15,9 +15,9 @@ module.exports = [
   },
 
   {
-    math: "1+xpi",
+    math: "1+pix",
     struct: node.op("+", [1,
-      node.am([node.am(["x", "p"]), "i"]),
+      node.am([node.am(["p", "i"]), "x"]),
     ]),
   },
 
