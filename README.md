@@ -8,7 +8,16 @@ A math expressions parser. We mean by mathematical that, e.g., arithmetic operat
 
 # Usage
 
-Require, import:
+Browser
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@scicave/rakam/lib/bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@scicave/rakam/lib/bundle.min.js"></script>
+```
+
+
+
+Require, import
 ```js
 const mathParser = require('@scicave/math-parser'); /*
   {
@@ -27,6 +36,9 @@ console.log(mathParser.parse(' 1.5 * 5  ^x !'));
 console.log(mathParser.parse(' 5^2x !'));
 
 console.log(mathParser.parse('2xy'));
+
+// matrix,,, see: options.extra
+console.log(mathParser.parse('[1,2; 3, 4]'));
 
 console.log(mathParser.parse('2long_var_name', { singleCharName: false, }));
 
@@ -81,12 +93,10 @@ To perform multiplication in these cases:
 
 Type = `boolean`, default: `true`.
 
-Maths conventionally works with single char named variables and constants, but in programming languages you have freedom. Moreover, the convention is to use multi-char named identifier.
-For example, if you want to use "pi" or "phi", etc, you have to set this to `false`.  
+Maths conventionally works with single char named variables and constants, but in programming languages you have freedom. The convention in programming is to use multi-char named identifier.
+For example, if you want to use "pi" or "phi", etc, you have to set this to `options.builtInIDs = ["pi", "phi"]`, it is set by default.  
 
-When a member expression is found, properties and methods are allowed to be multichar, despite of `options.singleCharName`
-
-> TODO: make new options `variables`, with default values "pi" and "phi", ..., use this option to deal with some multi-char variable (or constants, or you can say identifiers) in singleCharName mode
+When a member expression is found, properties and methods are allowed to be multi-char, despite of `options.singleCharName`
 
 ## .strict
 
@@ -111,16 +121,26 @@ Default: every thing is allowed.
     - `(-.5, infinity)`
     - `(-pi, 1]`
     - `[2,5)`
-- `sets` true or false, will return its items in the property `args`, affected with the option `extra.ellipsis`. for example: `{ 1, sqrt(pi), ..., sqrt(pi)^10 }`.
-- `tuples `true or false, e.g., `(1, 2, x, ...)`.
-- `ellipsis`:
-    - `0` or other falsy values: is not allowed
-    - `1` or other truthy values: `(1, 2, x, ...)` is allowed.
-    - `2`: `(1, 2, ..., x, ...)` is allowed.
-    - The same for function's arguments.
+- `sets`: e.g., `{ 1, sqrt(pi), ..., sqrt(pi)^10 }`
+- `tuples `: e.g., `(1, 2, x, ...)`
+- `matrices`: e.g., `[ sinx, 1, 3; cosy, sqrt(3), 0 ]`
+- `ellipsis`: to allow the 3-dots "...", e.g., `{ 1, 3, 5, ... }`
 - `trailingComma`: to allow some expressions like `f(1,2,)`
 - `blankTerms`: to allow some expressions like `f(1,,2)`
 
+### Notes
+
+* These expression are valid if allowed in `options.extra.{ellipsis, blankTerms}`:
+  * `(..., a)`
+  * `(, a)`
+  * `(a, )` is tuple depending on extra options.
+* Intervals, should have 2 terms as math expression:
+  * `(..., a]`: throw syntax error
+  * `(..., a)`: is a tuple, parsed if `extra.ellipsis ` is `true`
+  * `[2, 1, ]`: is a matrix, parsed if `extra.trailingComma` is `true`
+  * `(1, 2,)`: is a tuple, parsed if `extra.trailingComma ` is `true`
+  * `[, a]`: is a matrix, parsed if `extra.blankTerms` is `true`
+  * `(, a)`: is a tuple, parsed if `extra.blankTerms` is `true`
 
 ## .functions
 
@@ -144,13 +164,26 @@ When parsing `a.method(...)`, regardless of options, `method` will be always.
    = "a" |          | args = [ ... ]
 ```
 
+## .builtInIDs
+
+Type = `Array<string>`, default = `["pi", "phi"]`;
+
+To use multi-char names when setting [`singleCharName`](#.singleCharName) to true, for example:
+
+|Math Expression| Equivalent To | singleCharName |
+| ------------- | ------------- | -------------- |
+| `1 + pix`  | `1 + p*i*x`|`true`|
+|`1 + pi`| `1 + pi`|`true`|
+|`1 + pix` |  `1 + pix`|`singleCharName = false`|
+
 # Unsure about
+
 In these confusing cases, you can handle the parsed expression to transform to what you want.
 
 - `5^2x!`
 
 To be `5^(2x!)` or `(5^2)(x!)` or `(5^2x)!`, ...
-The result parser tree is equivalent to `(5^2)(x!)`.
+The current result AST is equivalent to `5^(2(x!))`.
 
 
 # License

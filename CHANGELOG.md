@@ -1,11 +1,27 @@
+# 🌟 10 Jan 2021, v4.0
 
-# Future Release, v3.1.0
+## Breaking
+
+* Update section `Unsure About` in README.md, change the way this ambiguous expression parsed.
+* `extra.ellipsis` now accept a boolean value, true, false.
+* These expression are valid if allowed in `options.extra.{ellipsis, blankTerms}`:
+  * `(..., a)`
+  * `(, a)`
+  * `(a, )` is tuple depending on extra options.
+* Intervals, should have 2 terms as math expression:
+  * `(..., a]`: throw syntax error, parsed if `extra.ellipsis ` is `true`
+  * `(..., a)`: is a tuple, parsed if `extra.ellipsis ` is `true`
+  * `[2, 1, ]`: is a matrix, parsed if `extra.trailingComma` is `true`
+  * `(1, 2,)`: is a tuple, parsed if `extra.trailingComma ` is `true`
+  * `[, a]`: is a matrix, parsed if `extra.blankTerms` is `true`
+  * `(, a)`: is a tuple, parsed if `extra.blankTerms` is `true`
 
 ## Add
 - `options.extra.matrices`
 - `options.builtInIDs`
   - `infinity, pi, phi`: these has specific values or notions in maths.
-  - `phix` is considered as automult of single-char ids, if `options.singleCharName=true`, otherwise it is node of type "id".
+  - `phix` is considered as automult of single-char ids, if `options.singleCharName=true`, otherwise it is node of type "id" with name "phix".
+  - when strict the previous expression will be automult of single-char ids, equivalent to `p*h*i*x`.  
 - When `options.strict === true`: the following expression is valid `1+3(2-3sqrt(pi)`.
 
 # 3 Jan 2021, v3.0.0
