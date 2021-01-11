@@ -32,31 +32,25 @@ Examples:
 ```js
 
 console.log(mathParser.parse(' 1.5 * 5  ^x !'));
-
 console.log(mathParser.parse(' 5^2x !'));
-
 console.log(mathParser.parse('2xy'));
 
 // matrix,,, see: options.extra
 console.log(mathParser.parse('[1,2; 3, 4]'));
 
+// multi-char variables
 console.log(mathParser.parse('2long_var_name', { singleCharName: false, }));
-
 // xlong_var_name is considered as one var not automult
 console.log(mathParser.parse('xlong_var_name', { singleCharName: false, }));
 
-// member expressions and matrices, non-sence expression, but it can be parsed
+// member expressions and matrices, nonsense expression, but it can be parsed
 console.log(mathParser.parse('f(x).someProperty ^ 2 >= [1,2,3; 5,6,7]', { functions: ['f'] }));
 
-// will throw error
+// will throw error, member expressions are not allowed
 console.log(mathParser.parse('f(x).someProperty.fn(y).result ^ 2  \n!', {
   functions: ['f'],
   extra: { memberExpressions: false }
 }));
-
-// strict is false by default so this is parsed correctly
-// without passing function = ['f'] to options 
-console.log(mathParser.parse('f().someProperty.fn(y).result ^ 2  \n!'));
 
 ```
 
@@ -141,6 +135,9 @@ Type = `Array<string>`, default = `[]`;
 When `autoMult` is `true`, some expression like `f(x)` will be considered
 as multiplication `f*(x)`, in order to parse it as a function with name = "f",
 you can pass `options.functions = ['f']`.
+
+When `singleCharName == true`, you should pass single-char functions. 
+
 When parsing `a.method(...)`, regardless of `singleCharName`, method names will be always multi-char name.
 
 ```
@@ -165,6 +162,29 @@ To use multi-char names when setting [`singleCharName`](#.singleCharName) to tru
 |`1 + pi`| `1 + pi`|`true`|
 |`1 + pix` |  `1 + pix`|`false`|
 
+## .builtInFunctions
+
+Type = `{ primary: Array<string>, secondary: Array<string> }`, default 👇.
+
+- `primary`: can be used like `sinx` and `logx`.
+- `secondary`: has to be used with parenthesis, `exp(pi)` and  `arcoth(1.2^2)`. The secondary builtin functions could be passed throw [options.functions](#.functions), but let them be here to avoid putting them redundantly in `options.functions`.
+
+Notice, when `singleCharName == true`, all primary and secondary has to be used with parenthesis "(...)", `sinx` is considered as node with type "id" and name "sinx".
+
+```json
+////////    primary   ///////
+// can be used like "sinx, logx"
+"sin", "cos", "tan", "sec",  "csc",  "cot", "asin", "acos", "atan",
+"asec", "acsc", "acot", "sinh", "cosh", "tanh", "sech", "csch", "coth",
+"ln", "log",
+
+////////   secondary   ///////
+"exp", "floor", "ceil", "round", "random", "sqrt",
+// hyperbolic function
+"arsinh", "arcosh", "artanh", "arsech", "arcsch", "arcoth",
+"arcsin", "arccos", "arcotan", "arcsec", "arccsc", "arccot",
+```
+
 ## .keepParen
 
 Type = `boolean`, default = `false`.
@@ -184,4 +204,5 @@ The current result AST is equivalent to `5^(2(x!))`.
 
 # License
 
-MIT
+MITls
+
