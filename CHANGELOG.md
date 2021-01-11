@@ -18,10 +18,10 @@
 * Remove option `strict`.
 
 ## Add
-- `options.keepParen`: if you want to parsed parenthesis as nodes in the AST, `{ type: "parenthesis" }`.
+- `options.keepParen`: if you want to parse parenthesis as nodes in the AST, `{ type: "parenthesis" }`.
 - `options.extra.matrices`
 - `options.builtInIDs`
-  - `infinity, pi, phi`: these has specific values or notions in maths.
+  - `infinity, pi, phi`: these have specific values or notions in maths.
   - `phix` is considered as automult of single-char ids, if `options.singleCharName=true`, otherwise it is node of type "id" with name "phix".
   - when strict the previous expression will be automult of single-char ids, equivalent to `p*h*i*x`. 
 
