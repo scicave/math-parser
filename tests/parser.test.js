@@ -161,7 +161,9 @@ function doTest(on, title) {
         let fn = () => {
           if (__test.error) {
             expect(()=>parser.parse(__test.math, __test.parserOptions)).toThrow(
-              __test.errorType === "syntax" ? parser.SyntaxError : r.errorType
+              __test.errorType === "syntax" ? parser.SyntaxError :
+              __test.errorType === "options" ? parser.OptionsError :
+              r.errorType
             );
           } else {
             expect(parser.parse(__test.math, __test.parserOptions)).toHaveStructure(__test.struct);

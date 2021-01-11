@@ -23,7 +23,9 @@ let replacements = [
       "module.exports = {",
       "  SyntaxError: peg$SyntaxError,",
       "  parse:       peg$parse,",
-      "  Node,", "  version,",
+      "  Node,",
+      "  OptionsError,",
+      "  version,",
       "};"
     ].join("\n"),
   },
@@ -37,6 +39,7 @@ let grammarFiles = [
       Node: "./Node.js",
       preParse: "./preParse.js",
       version: "./version.js",
+      OptionsError: "./OptionsError.js",
     },
   },
 ];
