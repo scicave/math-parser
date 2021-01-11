@@ -11,8 +11,8 @@ A math expressions parser. We mean by mathematical that, e.g., arithmetic operat
 Browser
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@scicave/rakam/lib/bundle.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@scicave/rakam/lib/bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@scicave/math-parser/lib/bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@scicave/math-parser/lib/bundle.min.js"></script>
 ```
 
 
