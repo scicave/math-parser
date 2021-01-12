@@ -36,6 +36,21 @@ module.exports = [
   },
 
   {
+    math: "a >= 2",
+    struct: node.op(">=", ["a", 2])
+  },
+
+  {
+    math: "x == 2",
+    struct: node.op("==", ["x", 2])
+  },
+
+  {
+    math: "x = 2",
+    struct: node.op("=", ["x", 2])
+  },
+
+  {
     math: "2xysina(2)",
     struct: node.am([
       node.am([
