@@ -7,15 +7,14 @@ const noSingleChar__memExpr = require("./noSingleChar__memExpr");
 const noSingleChar__functions = require("./noSingleChar__functions");
 const noSingleChar__autoMult = require("./noSingleChar__autoMult");
 const noSingleChar__BID = require("./noSingleChar__BID");
-const strict = require("./strict");
+const OptionsError = require("./OptionsError");
 const extra = require("./extra");
 const keepParentheses = require("./keepParentheses");
 
 module.exports = {
   basic,
   options: {
-    
-    strict,
+    OptionsError,
     keepParentheses,
     extra,
 

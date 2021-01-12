@@ -3,6 +3,19 @@ const { node } = require("./utils");
 module.exports = [
 
   {
+    title: "should parse: as automult when not found in builtInFunction or functions",
+    math: "sin(2)",
+    parserOptions: { singleCharName: false, builtInFunctions: { primary: [], secondary: [] } },
+    struct: node.am(["sin",2])
+  },
+
+  {
+    math: "sin2",
+    parserOptions: { singleCharName: false },
+    struct: "sin2"
+  },
+
+  {
     title: "function with no arguments, 2longFuncName()!",
     math: "2longFuncName()!",
     parserOptions: { singleCharName: false, functions: ['longFuncName'] },
@@ -62,6 +75,13 @@ module.exports = [
       ]),
       node.op("/", [3,2])
     ]),
+  },
+
+  {
+    title: "should parse: sqrt as builtin function when passed throw options",
+    math: "sqrt(2)",
+    parserOptions: { builtInFunctions: { primary: [], secondary: ["sqrt"] } },
+    struct: node.BIF("sqrt", [2])
   },
 
 ];

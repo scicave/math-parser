@@ -46,7 +46,7 @@ class NodeCreator {
       !Array.isArray(args) ||
       this.options.builtInFunctions.indexOf(name) === -1
     )
-      this.invalidArgs("builtin function");
+      console.log(name) && this.invalidArgs("builtin function");
     return { type: "function", name, isBuiltIn: true, args };
   }
 

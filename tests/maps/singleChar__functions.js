@@ -15,6 +15,47 @@ module.exports = [
   },
 
   {
+    math: "sin2",
+    // error: true, errorType: "syntax"
+    struct: node.BIF("sin", [2])
+  },
+
+  {
+    math: "sin2!",
+    // error: true, errorType: "syntax"
+    struct: node.BIF("sin", [node.pOP("!", [2])])
+  },
+
+  {
+    math: "sinpi",
+    struct: node.BIF("sin", ["pi"])
+  },
+
+  {
+    math: "sinpi!",
+    struct: node.BIF("sin", [node.pOP("!", ["pi"])])
+  },
+
+  {
+    math: "asdx",
+    parserOptions: { builtInFunctions: { primary: ["asd"] } },
+    struct: node.BIF("asd", ["x"])
+  },
+
+  {
+    title: "should parse: as automult when not found in builtInFunction or functions",
+    math: "sin(2)",
+    parserOptions: { builtInFunctions: { primary: [], secondary: [] } },
+    struct: node.am([
+      node.am([
+        node.am(["s", "i"]),
+        "n"
+      ]),
+      2
+    ])
+  },
+
+  {
     math: "f(1,2,3x)",
     parserOptions: { functions: [ "f" ] },
     struct: node.F("f", [1,2,node.am([3,"x"])])

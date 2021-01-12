@@ -4,6 +4,7 @@ A math expressions parser. We mean by mathematical that, e.g., arithmetic operat
 **See also:** [math-latex-parser](https://github.com/scicave/math-latex-parser)
 
 # Install
+
 `npm install @scicave/math-parser`
 
 # Usage
@@ -15,9 +16,8 @@ Browser
 <script src="https://cdn.jsdelivr.net/npm/@scicave/math-parser/lib/bundle.min.js"></script>
 ```
 
-
-
 Require, import
+
 ```js
 const mathParser = require('@scicave/math-parser'); /*
   {
@@ -29,8 +29,8 @@ const mathParser = require('@scicave/math-parser'); /*
 ```
 
 Examples: 
-```js
 
+```js
 console.log(mathParser.parse(' 1.5 * 5  ^x !'));
 console.log(mathParser.parse(' 5^2x !'));
 console.log(mathParser.parse('2xy'));
@@ -51,7 +51,6 @@ console.log(mathParser.parse('f(x).someProperty.fn(y).result ^ 2  \n!', {
   functions: ['f'],
   extra: { memberExpressions: false }
 }));
-
 ```
 
 ## Operators Schema
@@ -74,6 +73,8 @@ console.log(mathParser.parse('f(x).someProperty.fn(y).result ^ 2  \n!', {
 
 # Options
 
+When invalid options passed, `mathParser.OptionsError` is thrown.
+
 ## .autoMult
 
 Type = `boolean`, default: `true`.
@@ -92,6 +93,7 @@ Maths conventionally works with single char named variables and constants, but i
 
 When a member expression is found, properties and methods are allowed to be multi-char, despite of `options.singleCharName`, see: `options.extra.memberExpressions`.
 
+You can use `a1, a2, ...` as single-char names.
 
 ## .extra
 
@@ -204,5 +206,5 @@ The current result AST is equivalent to `5^(2(x!))`.
 
 # License
 
-MITls
+MIT
 

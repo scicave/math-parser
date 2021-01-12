@@ -3,6 +3,11 @@ const { node } = require("./utils");
 module.exports = [
 
   {
+    math: "",
+    error: true, errorType: "syntax"
+  },
+
+  {
     math: "1+2^1.2 / x ! * -5.236 --2",
     struct: node.op("-", [
       node.op("+", [
@@ -87,9 +92,7 @@ module.exports = [
         "x",
         node.am([
           node.am([4, "y"]),
-          node.pOP("!", [
-            node.BIF("sin", ["x"])
-          ])
+          node.BIF("sin", [node.pOP("!", ["x"])])
         ])
       ])
     ])
@@ -103,9 +106,7 @@ module.exports = [
         "x",
         node.am([
           node.am([4, "y"]),
-          node.pOP("!", [
-            node.BIF("sin", ["x"])
-          ])
+          node.BIF("sin", [node.pOP("!", ["x"])])
         ])
       ])
     ])

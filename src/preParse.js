@@ -1,7 +1,7 @@
 module.exports = function preParse(input, peg$computeLocation, error) {
 
   let _;
-  if (/^\s*$/.test(input)) error("input math shouldn't be whitespaces only", null);
+  if (/^\s*$/.test(input)) error("no expression found", null);
   
   // the same as the pegjs rule "_" in ./tex.pegjs
   var ignore = /^\s+/;

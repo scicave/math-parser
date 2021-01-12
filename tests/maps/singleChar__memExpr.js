@@ -20,7 +20,6 @@ module.exports = [
 
   {
     math: "p1.s(x,2).c - 1^2!",
-    parserOptions: { functions: ['p1.f'] },
     struct: node.op("-", [
       node.mem([
         node.mem(["p1", node.F("s", ["x",2])]),

@@ -8,14 +8,6 @@
     keepParen: false,
     functions: [],
     builtInIDs: ["infinity", "pi", "phi"],
-    builtInFunctions: [
-      "sinh", "cosh", "tanh", "sech",  "csch",  "coth",  
-      "arsinh", "arcosh", "artanh", "arsech",  "arcsch", "arcoth",
-      "sin", "cos", "tan", "sec",  "csc",  "cot",
-      "asin", "acos", "atan", "asec", "acsc",  "acot",
-      "arcsin", "arccos", "arctan", "arcsec",  "arccsc",  "arccot", 
-      "ln", "log", "exp", "floor", "ceil", "round", "random", "sqrt"
-    ],
   }, options, {
     extra: {
       memberExpressions: true,
@@ -25,25 +17,57 @@
       ellipsis: 2,
       trailingComma: true,
       blankTerms: true,
-      ...(options.extra||{})
-     }
+      ...(options.extra||{  })
+    },
+    builtInFunctions: {
+      primary: [
+        // can be used like "sinx, logx"
+        "sin", "cos", "tan", "sec",  "csc",  "cot", "asin", "acos", "atan",
+        "asec", "acsc", "acot", "sinh", "cosh", "tanh", "sech", "csch", "coth",
+        "ln", "log",
+      ],
+      secondary: [
+        "exp", "floor", "ceil", "round", "random", "sqrt",
+        // hyperbolic function
+        "arsinh", "arcosh", "artanh", "arsech", "arcsch", "arcoth",
+        "arcsin", "arccos", "arcotan", "arcsec", "arccsc", "arccot",
+      ],
+      ...(options.builtInFunctions||{  })
+    },
+  });
+
+  // validations
+  if (options.singleCharName)
+  options.functions.forEach((f)=>{
+    if(f.length !== 1) throw new OptionsError(`can't use multi-char functions when singleCharName = true`);
   });
   
-  let hasTrailing, factorNameMatched, builtInFunctionTitle;
+  let hasTrailing, factorNameMatched, BIFName;
 
   preParse(input, peg$computeLocation, error);
 
   function pushChar(c, mode) {
-    if (mode === "builtInFunctions") {
-      let newTitle = builtInFunctionTitle + c, found = false;
-      for (let t of options.builtInFunctions) {
+    if (mode === "BIFPrimary") {
+      let newTitle = BIFName + c, found = false;
+      for (let t of options.builtInFunctions.primary) {
         if (t.length === newTitle.length && t === newTitle ||
             t.length > newTitle.length && t.slice(0, newTitle.length) === newTitle) {
           found = true; break;
         }
       }
       if (!found) return false;
-      builtInFunctionTitle = newTitle;
+      BIFName = newTitle;
+      return true;
+    } else if (mode === "BIFSecondary") {
+      let newTitle = BIFName + c, found = false;
+      for (let t of options.builtInFunctions.secondary) {
+        if (t.length === newTitle.length && t === newTitle ||
+            t.length > newTitle.length && t.slice(0, newTitle.length) === newTitle) {
+          found = true; break;
+        }
+      }
+      if (!found) return false;
+      BIFName = newTitle;
       return true;
     }
   }
@@ -188,6 +212,36 @@ AutoMult "operation or factor" = /// series of multiplication or one "Factor"
     }, head);
   }
 
+operation5bifpArg =
+  head:(FactorNumber/ operation5bifpName)
+  tail:(_ n:operation5bifpName { return n })*
+  tailtail:(_ "^" _ Operation5)*
+  {
+    factorNameMatched = false;
+    // when singleCharName: sinxyz,,, multiple ids after the first id
+    head = tail.reduce(function(result, id) {
+      return createNode("automult" , [result, id]);
+    }, head);
+    return tailtail.reduce(function(base, exponent) {
+      let exp = exponent[3];
+      if (base.checkType("automult")) {
+        base.args[1] = createNode('operator' , [base.args[1], exp], {name: "^", operatorType: 'infix'});
+        return base;
+      }
+      else 
+        return createNode('operator' , [base, exp], {name: "^", operatorType: 'infix'});
+    }, head);
+  }
+
+operation5bifpName = f:(
+    BuiltInIDs /
+    !Functions n:Name { return n }
+  ) _ fac:factorial? {
+    if (fac) f = createNode('postfix operator', [f], {name: '!'});
+    factorNameMatched = f.type === 'id';
+    return f;
+  }
+
 Factor = FactorNumber / FactorNotNumber
 
 FactorNumber =
@@ -198,71 +252,74 @@ FactorNumber =
 
 FactorNotNumber =
   f:(
-    // !char to avoid take the first term "pi" of "pix"
-    &{ return !factorNameMatched } bid:BuiltInIDs !char { return bid } /
+    // factorNameMatched is used for cases like "xpi"
+    // !char to avoid take the first term "pi" of "pix",,, update: no need for it
+    BuiltInIDs /* !char */ /
     MemberExpression / Functions / TupleOrExprOrParenOrIntervalOrSetOrMatrix /
     BlockVBars / NameNME
   ) _ fac:factorial? {
-    factorNameMatched = f.type === 'id';
     if (fac) f = createNode('postfix operator', [f], {name: '!'});
+    factorNameMatched = f.type === 'id';
     return f;
   }
 
 Functions "functions" =
-  BuiltInFunctions / Function
+  BIFPrimary / Function
 
-BuiltInFunctions =
-  name:builtInFuncsTitles _ exp:SuperScript? _ args:builtInFuncArgs {
+BIFPrimary =
+  name:bifPrimaryNames _ exp:SuperScript? _ args:bifPrimaryArgs {
     let func = createNode('function', args, {name, isBuiltIn:true});
     if(exp) func.exp = exp;
     return func;
   }
 
-builtInFuncsTitles =
-  &{ builtInFunctionTitle = ''; return options.singleCharName }
-  (c:char &{ return pushChar(c, "builtInFunctions") } { return c })+
+bifPrimaryNames =
+  &{ BIFName = ''; return options.singleCharName }
+  (c:char &{ return pushChar(c, "BIFPrimary") } { return c })+
   // it may not be a complete title
-  &{ return options.builtInFunctions.indexOf(builtInFunctionTitle) > -1 } {
-    // increate pos by the title length
-    /* peg$currPos += builtInFunctionTitle.length; */
-    return builtInFunctionTitle;
+  &{ return options.builtInFunctions.primary.indexOf(BIFName) > -1 } {
+    return BIFName;
   } /
   // singleCharName = false
-  n:$multiCharName &{ return options.builtInFunctions.indexOf(n) > -1 } { return n }
+  n:$multiCharName &{ return options.builtInFunctions.primary.indexOf(n) > -1 } { return n }
 
-builtInFuncArgs = a:(
-    (
-      head:(Number / !Functions n:Name { return n; })
-      tail:(_ (!Functions n:Name { return n; }))* {
-        return tail.reduce(function(result, element) {
-          return createNode("automult" , [result, element[1]]);
-        }, head);
-      }
-    ) /
+bifPrimaryArgs = a:(
+    Functions /
+    operation5bifpArg /
     functionParentheses /
-    BlockVBars /
-    Functions
+    BlockVBars
   ) {
     return Array.isArray(a) ? a : [a]; //  array when it is functionParentheses
   }
 
+// from options.functions or a secondary builtin
 Function = 
-  name:$NameNME _ args:(
+  name:(bifSecondaryName/$NameNME) _ args:(
     a:(functionParenthesesNotVoid &{
-      let exists = options.functions.indexOf(name)>-1;
+      let exists = options.functions.indexOf(name)>-1
+      || options.builtInFunctions.secondary.indexOf(name)>-1;
       if (!exists && !options.autoMult)
         error(`"${name}" is not a function, and autoMult is not activated`);
       return exists;
     }) { return a[0] } /
     voidParentheses &{
-      let exists = options.functions.indexOf(name)>-1;
+      let exists = options.functions.indexOf(name)>-1
+      || options.builtInFunctions.secondary.indexOf(name)>-1;
       if (!exists)
         error(`"${name}" is not a function, and autoMult is not activated`);
       return true; // in case not strict mode, it is a valid function regardless of `exists`
     } { return [] }
   ) {
-    // `a` is eiher array or expr
-    return createNode('function', args, { name });
+    let isBuiltIn = options.builtInFunctions.secondary.indexOf(name)>-1;
+    return createNode('function', args, { name, isBuiltIn });
+  }
+
+bifSecondaryName =
+  &{ BIFName = ''; return options.singleCharName }
+  (c:char &{ return pushChar(c, "BIFSecondary") } { return c })+
+  // it may not be a complete title
+  &{ return options.builtInFunctions.secondary.indexOf(BIFName) > -1 } {
+    return BIFName;
   }
 
 // for member expressions
@@ -376,7 +433,7 @@ sign
 
 //////////////
 
-BuiltInIDs = n:$multiCharName &{ return options.builtInIDs.indexOf(n) > -1 } {
+BuiltInIDs = &{ return !factorNameMatched } n:$multiCharName &{ return options.builtInIDs.indexOf(n) > -1 } {
   return createNode("id", null, { name: n, builtIn: true });
 }
 
@@ -389,7 +446,9 @@ NameNME = _name {
 
   //#region checking if function id is used as variable id
   let er = false;
-  er = options.builtInFunctions.indexOf(name) > -1 || options.functions.indexOf(name) > -1;
+  er = options.builtInFunctions.primary.indexOf(name) > -1
+    || options.builtInFunctions.secondary.indexOf(name) > -1
+    || options.functions.indexOf(name) > -1;
   if(er && options.strict){
     error('the function "' + name + '", it used with no arguments! can not use the function a variable!');
   }
