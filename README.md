@@ -1,5 +1,5 @@
 # math-parser
-A math expressions parser. We mean by mathematical that, e.g., arithmetic operations is considered for example if you pass "1+2", the result would by a (add node "+") with two children nodes of type number.
+A math expressions parser. We mean by mathematical that, e.g., arithmetic operations is considered for example if you pass `1+2`, the result will be a node with type `operator` and name `+` with two children nodes of type `number` in its `args` property. Just play with expressions, log the result and see the different situations.
 
 **See also:** [math-latex-parser](https://github.com/scicave/math-latex-parser)
 
@@ -92,7 +92,7 @@ To perform multiplication in these cases:
 
 Type = `boolean`, default: `true`.
 
-Maths conventionally works with single char named variables and constants, but in programming languages you have freedom. The convention in programming is to use multi-char named identifier. See: [options.builtInIDs](#.builtInIDs).
+Maths conventionally works with single char named variables and constants, but in programming languages you have freedom. The convention in programming is to use multi-char named identifier. See: [options.builtInIDs](#builtinids).
 
 When a member expression is found, properties and methods are allowed to be multi-char, despite of `options.singleCharName`, see: `options.extra.memberExpressions`.
 
@@ -159,12 +159,15 @@ When parsing `a.method(...)`, regardless of `singleCharName`, method names will 
 
 Type = `Array<string>`, default = `["infinity", "pi", "phi"]`;
 
-To use multi-char names when setting [`singleCharName`](#.singleCharName) to true, for example:
+To use multi-char names when setting [`singleCharName`](#singlecharname) to true, for example:
 
 |Math Expression| Equivalent To | singleCharName |
 | ------------- | ------------- | -------------- |
 | `1 + pix`  | `1 + p*i*x`|`true`|
+| `1 + xpi` | `1 + x*p*i`|`true`|
+|`1 + x pi`| `1 + x*pi`|`true`|
 |`1 + pi`| `1 + pi`|`true`|
+|`1 + pi x` |  `1 + pi*x`|`false`|
 |`1 + pix` |  `1 + pix`|`false`|
 
 ## .builtInFunctions
@@ -172,7 +175,7 @@ To use multi-char names when setting [`singleCharName`](#.singleCharName) to tru
 Type = `{ primary: Array<string>, secondary: Array<string> }`, default 👇.
 
 - `primary`: can be used like `sinx` and `logx`.
-- `secondary`: has to be used with parenthesis, `exp(pi)` and  `arcoth(1.2^2)`. The secondary builtin functions could be passed throw [options.functions](#.functions), but let them be here to avoid putting them redundantly in `options.functions`.
+- `secondary`: has to be used with parenthesis, `exp(pi)` and  `arcoth(1.2^2)`. The secondary builtin functions could be passed throw [options.functions](#functions), but let them be here to avoid putting them redundantly in `options.functions`.
 
 Notice, when `singleCharName == true`, all primary and secondary has to be used with parenthesis "(...)", `sinx` is considered as node with type "id" and name "sinx".
 
