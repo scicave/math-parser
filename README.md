@@ -38,6 +38,9 @@ console.log(mathParser.parse('2xy'));
 // matrix,,, see: options.extra
 console.log(mathParser.parse('[1,2; 3, 4]'));
 
+// absolute values
+console.log(mathParser.parse('||x - y| - |y - z||'));
+
 // multi-char variables
 console.log(mathParser.parse('2long_var_name', { singleCharName: false, }));
 // xlong_var_name is considered as one var not automult
