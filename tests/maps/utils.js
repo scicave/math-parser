@@ -96,6 +96,12 @@ class NodeCreator {
     return { type: "parentheses", args };
   }
 
+  abs(args) {
+    if (!Array.isArray(args) || args.length !== 1)
+      this.invalidArgs("abs");
+    return { type: "abs", args };
+  }
+
   tuple(args) {
     if (!Array.isArray(args)) this.invalidArgs("tuple");
     return { type: "tuple", args };

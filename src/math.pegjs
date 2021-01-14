@@ -405,7 +405,7 @@ commaExpression = body:(
 voidParentheses =  "(" _ ")" { return [] }; 
 
 BlockVBars =
-  "|" expr:Expression "|" { return createNode('block', [expr], {name: '||'}) }
+  "|" expr:Expression "|" { return createNode('abs', [expr]) }
 
 ////// main factor, tokens
 

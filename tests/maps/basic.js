@@ -51,6 +51,14 @@ module.exports = [
   },
 
   {
+    math: "||x - y| - |y - z||",
+    struct: node.abs([node.op("-", [
+      node.abs([node.op("-", ["x", "y"])]),
+      node.abs([node.op("-", ["y", "z"])])
+    ])])
+  },
+
+  {
     math: "2xysina(2)",
     struct: node.am([
       node.am([

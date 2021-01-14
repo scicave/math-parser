@@ -42,6 +42,7 @@ Node.types = {
   MATRIX: "matrix",
   TUPLE: "tuple",
   SET: "set",
+  ABS: "abs", // | value |
 };
 
 Node.types.values = Object.values(Node.types);
