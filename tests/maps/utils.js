@@ -2,7 +2,8 @@ class NodeCreator {
   // take a look at the valid Node types at src/Node.js
   constructor(options) {
     this.setOptions(options);
-    this.ellipsis = "...";
+    this.ellipsis = { type: "ellipsis" };
+    this.blank = { type: "blank" };
   }
 
   setOptions(options = {}) {

@@ -41,8 +41,9 @@ module.exports = [
   },
 
   {
+    title: "should throw(syntax): invalid operator type",
     math: "x == 2",
-    struct: node.op("==", ["x", 2])
+    error: true, errorType: Error
   },
 
   {

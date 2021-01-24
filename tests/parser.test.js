@@ -151,8 +151,8 @@ function getTitle(__test) {
 // our tests js object, stored in `map`
 // if the property is array, then this 
 // is array of tests to do using `jest.test`
-// otherwise this is a group to do to pack
-// insige `jest.describe` 
+// otherwise this is a group to pack
+// inside `jest.describe` 
 function doTest(on, title) {
   describe(title, ()=>{
     if (on instanceof Array) {
@@ -163,7 +163,7 @@ function doTest(on, title) {
             expect(()=>parser.parse(__test.math, __test.parserOptions)).toThrow(
               __test.errorType === "syntax" ? parser.SyntaxError :
               __test.errorType === "options" ? parser.OptionsError :
-              r.errorType
+              __test.errorType
             );
           } else {
             expect(parser.parse(__test.math, __test.parserOptions)).toHaveStructure(__test.struct);

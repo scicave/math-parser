@@ -32,7 +32,7 @@ module.exports = [
     struct: node.matrix([
       [1, 1, 4], [
         node.ellipsis,
-        null,
+        node.blank,
         node.F("sqrt", ["a"])
       ]
     ])
@@ -103,7 +103,7 @@ module.exports = [
   {
     title: "should parse: as tuple not interval when 1st term is blank",
     math: "(,a)",
-    struct: node.tuple([null, "a"])
+    struct: node.tuple([node.blank, "a"])
   },
 
   {
@@ -168,34 +168,34 @@ module.exports = [
   {
     title: "should parse: as matrix",
     math: "[a, ...]",
-    strucr: node.matrix([["a", node.ellipsis]])
+    struct: node.matrix([["a", node.ellipsis]])
   },
 
   {
     title: "should parse: as matrix",
     math: "[a, b, ]",
-    strucr: node.matrix([["a", "b"]])
+    struct: node.matrix([["a", "b"]])
   },
 
   {
     math: "f(1,,4, ...)",
     parserOptions: { functions: ["f"] },
-    struct: node.F("f", [1, null, 4, node.ellipsis])
+    struct: node.F("f", [1, node.blank, 4, node.ellipsis])
   },
 
   {
     math: "f(1,,4, ...)",
-    struct: node.am(["f", node.tuple([1, null, 4, node.ellipsis])])
+    struct: node.am(["f", node.tuple([1, node.blank, 4, node.ellipsis])])
   },
 
   {
     math: "{1,,4, ...}",
-    struct: node.set([1, null, 4, node.ellipsis])
+    struct: node.set([1, node.blank, 4, node.ellipsis])
   },
 
   {
     math: "[1,,4, ...]",
-    struct: node.matrix([[1, null, 4, node.ellipsis]])
+    struct: node.matrix([[1, node.blank, 4, node.ellipsis]])
   },
 
 ];
