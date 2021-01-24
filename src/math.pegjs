@@ -46,30 +46,31 @@
 
   preParse(input, peg$computeLocation, error);
 
+  // continue push char after another incase options.singleCharName == true
+  // if we assembled a string which is not a function name
+  // and not even a begining part of it, stop assemling the name
+  // the assembled may be a part of a function name, so
+  // we have to check again the in the pegjs `Rule` that
+  // BIFName is not a fake one. 
   function pushChar(c, mode) {
-    if (mode === "BIFPrimary") {
-      let newTitle = BIFName + c, found = false;
-      for (let t of options.builtInFunctions.primary) {
-        if (t.length === newTitle.length && t === newTitle ||
-            t.length > newTitle.length && t.slice(0, newTitle.length) === newTitle) {
-          found = true; break;
-        }
+    let arr;
+    if (mode === "BIFPrimary")
+      arr = options.builtInFunctions.primary;
+    else if (mode === "BIFSecondary")
+      arr = options.builtInFunctions.secondary;
+    else throw new Error("unexpecte error, math-parser: inside pushChar");
+
+    let newTitle = BIFName + c, found = false;
+    for (let t of arr) {
+      if (t.length === newTitle.length && t === newTitle ||
+          t.length > newTitle.length && t.slice(0, newTitle.length) === newTitle) {
+        found = true; break;
       }
-      if (!found) return false;
-      BIFName = newTitle;
-      return true;
-    } else if (mode === "BIFSecondary") {
-      let newTitle = BIFName + c, found = false;
-      for (let t of options.builtInFunctions.secondary) {
-        if (t.length === newTitle.length && t === newTitle ||
-            t.length > newTitle.length && t.slice(0, newTitle.length) === newTitle) {
-          found = true; break;
-        }
-      }
-      if (!found) return false;
-      BIFName = newTitle;
-      return true;
     }
+
+    if (!found) return false;
+    BIFName = newTitle;
+    return true;
   }
 
   function createNode(...args){
@@ -124,10 +125,13 @@
     // tuple or interval or set
     if (Array.isArray(node)) {
       if (node.length === 2 && options.extra.intervals && !hasTrailing)
-        // make sure not have blank terms or "..."
-        if (!(node[0] === null || node[1] === null ||
-              node[0] === "..." || node[1] === "..."))
-          return createNode("interval", node, { startInclusive: o==="[", endInclusive: c==="]" });
+        // make sure not have blank terms or ellpsis
+        if (!node[0].checkType("blank") &&
+            !node[1].checkType("blank") &&
+            !node[0].checkType("ellipsis") &&
+            !node[1].checkType("ellipsis")) {
+              return createNode("interval", node, { startInclusive: o==="[", endInclusive: c==="]" });
+            }
       // matrix
       if (o === "[" && c === "]") 
         return createNode("matrix", [node]);
@@ -274,6 +278,7 @@ BIFPrimary =
   }
 
 bifPrimaryNames =
+  // reset and continue onlt if options.singleCharName
   &{ BIFName = ''; return options.singleCharName }
   (c:char &{ return pushChar(c, "BIFPrimary") } { return c })+
   // it may not be a complete title
@@ -314,7 +319,9 @@ Function =
     return createNode('function', args, { name, isBuiltIn });
   }
 
+// builtin secondary fnction name
 bifSecondaryName =
+  // reset and continue onlt if options.singleCharName
   &{ BIFName = ''; return options.singleCharName }
   (c:char &{ return pushChar(c, "BIFSecondary") } { return c })+
   // it may not be a complete title
@@ -362,13 +369,13 @@ commaSemiColonExpression
 commaExpression = body:(
 
     head:Expression
-    tail:("," a:(Expression / _ "..." _ { return "..." } / _ { return "__white__space__" }) { return a })*
+    tail:("," a:(Expression / Ellipsis / _ { return "__white__space__" }) { return a })*
     {
       return { head, tail };
     }
 
-  / head:(_ "..." _ { return "..." } / _ { return "__white__space__" })
-    tail:("," a:(Expression / _ "..." _ { return "..." } / _ { return "__white__space__" }) { return a })+
+  / head:(Ellipsis / _ { return "__white__space__" })
+    tail:("," a:(Expression / Ellipsis / _ { return "__white__space__" }) { return a })+
     {
       return { head, tail };
     }
@@ -382,19 +389,18 @@ commaExpression = body:(
           if(options.extra.trailingComma) {
             hasTrailing = true;
             tail.pop();
-          }
-          else
+          } else
             error("trailing comma is not allowed")
         if("__white__space__" === tail[tail.length-1])
           error("blank terms are not allowed at the end");
         for (let i=0; i<tail.length-1; i++) {
-          if(tail[i] === "..." && !options.extra.ellipsis)
-            error("ellipsis is not allow");
           if(tail[i] === "__white__space__") {
             if(!options.extra.blankTerms)
               error("blank terms are't allowed");
-            tail[i] = null;
+            tail[i] = createNode("blank");
           }
+          else if(tail[i].checkType("ellipsis") && !options.extra.ellipsis)
+            error("ellipsis is not allow");
         }
         return tail;
       }
@@ -402,7 +408,7 @@ commaExpression = body:(
     }
 
 // related to functions
-voidParentheses =  "(" _ ")" { return [] }; 
+voidParentheses = "(" _ ")" { return [] }; 
 
 BlockVBars =
   "|" expr:Expression "|" { return createNode('abs', [expr]) }
@@ -410,6 +416,8 @@ BlockVBars =
 ////// main factor, tokens
 
 SuperScript "superscript" = "^" _ arg:Factor { return arg; }
+// but paces around it use it directly there
+Ellipsis = _ "..." _ { return createNode("ellipsis") }
 
 ///////// numbers
 
@@ -434,7 +442,7 @@ sign
 //////////////
 
 BuiltInIDs = &{ return !factorNameMatched } n:$multiCharName &{ return options.builtInIDs.indexOf(n) > -1 } {
-  return createNode("id", null, { name: n, builtIn: true });
+  return createNode("id", null, { name: n, isBuiltIn: true });
 }
 
 Name "name" = MemberExpressionName / NameNME
