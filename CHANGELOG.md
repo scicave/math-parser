@@ -1,3 +1,16 @@
+# 24 Jan 2021, v4.2.2
+
+## Breaking
+
+- Blank terms are represented as `{ type: "blank" }`.
+- Ellipsis are represented as `{ type: "ellpisis" }`.
+
+## Added
+
+- `class Node`
+  - `hasChildR`
+  - `hasChild`
+
 # 🌟 11 Jan 2021, v4.0
 
 ## Breaking
@@ -17,7 +30,7 @@
   * `(, a)`: is a tuple, parsed if `extra.blankTerms` is `true`
 * Remove option `strict`.
 
-## Add
+## Added
 - `options.keepParen`: if you want to parse parenthesis as nodes in the AST, `{ type: "parenthesis" }`.
 - `options.extra.matrices`
 - `options.builtInIDs`

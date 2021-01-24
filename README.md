@@ -1,13 +1,14 @@
 # math-parser
+
 A math expressions parser. We mean by mathematical that, e.g., arithmetic operations is considered for example if you pass `1+2`, the result will be a node with type `operator` and name `+` with two children nodes of type `number` in its `args` property. Just play with expressions, log the result and see the different situations.
 
 **See also:** [math-latex-parser](https://github.com/scicave/math-latex-parser)
 
-# Install
+## Install
 
 `npm install @scicave/math-parser`
 
-# Usage
+## Usage
 
 Browser
 
@@ -74,11 +75,79 @@ console.log(mathParser.parse('f(x).someProperty.fn(y).result ^ 2  \n!', {
 |`<`|2|left-to-right|
 |`=`|1|left-to-right|
 
-# Options
+## AST Node
+
+The `parse` function returns a `Node`, which may have array of other `Node`s in its `args`.
+
+### Node.prototype.type
+
+The `Node` type, see the [available type](#nodetypes).
+
+### Node.prototype.isBuiltIn
+
+If the `Node` is either `id` or `function` it maybe a builtin.
+
+See [builtInFunctions](#builtInfunctions), [builtInIDs](#builtinids). 
+
+### Node.prototype.check(props: Object)
+
+This method can check all properties except `args`, it will be ignored.
+
+```js
+let node = mathParser.parse("2!");
+console.log(node.check({
+  type: "operator",
+  operatorType: "postfix",
+  name: "!"
+}));
+// true
+```
+
+### Node.prototype.checkType(type: string)
+
+You can check for `type` directly here.
+
+```js
+let node = mathParser.parse("1");
+console.log(node.checkType("member expression"));
+// false
+```
+
+### Node.prototype.hasChild(props: Object)
+
+This method can check for any of `args` with properties `props`. It doesn't check for`args`, it will be ignored.
+
+```js
+let node = mathParser.parse("1+2");
+// { type: "operator", args: [...], operatorType: "infix" }
+console.log(node.hasChild({ type: "number", value: 1 }));
+// true
+```
+
+### Node.prototype.hasChildR(props: Object)
+
+The same as `hasChild`, but recursively.
+
+```js
+let node = mathParser.parse("sin(1+2)");
+// { type: "function", name: "sin", args: [...], isBuiltIn: true }
+console.log(node.hasChildR({ type: "number", value: 1 }));
+// true
+```
+
+### Node.types
+
+Available values for `Node.prototype.type` .
+
+Array of literal strings: `Node.types.values` .
+
+All Valid operators: `Node.types.operators` .
+
+## Options
 
 When invalid options passed, `mathParser.OptionsError` is thrown.
 
-## .autoMult
+### .autoMult
 
 Type = `boolean`, default: `true`.
 
@@ -86,9 +155,9 @@ To perform multiplication in these cases:
 1. `2x`
 2. `sinxcosx`
 3. `sinx(5y)`
-> Notice: `sinxcosx` when singleCharName is `false` will be a variable name
+> Notice: `sinxcosx` when `singleCharName` is false will be a variable name
 
-## .singleCharName
+### .singleCharName
 
 Type = `boolean`, default: `true`.
 
@@ -98,7 +167,7 @@ When a member expression is found, properties and methods are allowed to be mult
 
 You can use `a1, a2, ...` as single-char names.
 
-## .extra
+### .extra
 
 Default: every thing is allowed. 
 
@@ -119,7 +188,9 @@ Default: every thing is allowed.
 - `trailingComma`: to allow some expressions like `f(1,2,)`
 - `blankTerms`: to allow some expressions like `f(1,,2)`
 
-### Notes
+----------------------
+
+Notes
 
 * These expression are valid if allowed in `options.extra.{ellipsis, blankTerms}`:
   * `(..., a)`
@@ -133,7 +204,7 @@ Default: every thing is allowed.
   * `[, a]`: is a matrix, parsed if `extra.blankTerms` is `true`
   * `(, a)`: is a tuple, parsed if `extra.blankTerms` is `true`
 
-## .functions
+### .functions
 
 Type = `Array<string>`, default = `[]`;
 
@@ -147,15 +218,15 @@ When parsing `a.method(...)`, regardless of `singleCharName`, method names will 
 
 ```
         member expression
-             _/\_
-           _/    \_
+              /\
+            /    \
         __/        \________
         id          function
    name  |          | name = "method"
    = "a" |          | args = [ ... ]
 ```
 
-## .builtInIDs
+### .builtInIDs
 
 Type = `Array<string>`, default = `["infinity", "pi", "phi"]`;
 
@@ -170,7 +241,7 @@ To use multi-char names when setting [`singleCharName`](#singlecharname) to true
 |`1 + pi x` |  `1 + pi*x`|`false`|
 |`1 + pix` |  `1 + pix`|`false`|
 
-## .builtInFunctions
+### .builtInFunctions
 
 Type = `{ primary: Array<string>, secondary: Array<string> }`, default 👇.
 
@@ -193,14 +264,14 @@ Notice, when `singleCharName == true`, all primary and secondary has to be used 
 "arcsin", "arccos", "arcotan", "arcsec", "arccsc", "arccot",
 ```
 
-## .keepParen
+### .keepParen
 
 Type = `boolean`, default = `false`.
 
 If you want to make grouping parenthesis nodes in the result AST, `{ type: 'parenthesis', ... }`.
 
 
-# Unsure about
+## Unsure about
 
 In these confusing cases, you can handle the parsed expression to transform to what you want.
 
@@ -210,7 +281,7 @@ To be `5^(2x!)` or `(5^2)(x!)` or `(5^2x)!`, ...
 The current result AST is equivalent to `5^(2(x!))`.
 
 
-# License
+## License
 
 MIT
 
