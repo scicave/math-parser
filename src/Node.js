@@ -1,11 +1,17 @@
 class Node {
+
   constructor(type, args, props) {
     Object.assign(this, props);
-
     if (Node.types.values.indexOf(type) === -1) {
       throw new Error('invalid type for the node, "' + type + '"');
+    } if(type === "operator") {
+      if (!props.operatorType)
+        throw new Error(`operator should have operatorType as well.`);
+      if (props.operatorType !== "infix" && props.operatorType !== "postfix")
+        throw new Error(`invalid operatorType: ${props.operatorType}`);
+      if (Node.types.operators[props.operatorType].indexOf(props.name) === -1)
+        throw new Error(`invalid operator name: ${props.name}`);
     }
-
     this.type = type;
     this.args = args;
   }
@@ -18,7 +24,9 @@ class Node {
     }
   }
 
-  // check every thing except args
+  /**
+   * check every property except args
+   */
   check(props) {
     for (let p in props) {
       if (p === "type") {
@@ -27,6 +35,31 @@ class Node {
     }
     return true;
   }
+
+  /**
+   * if a descendant Node with props exsits recursively
+   * @param props properties to check descendant Nodes against
+   */
+  hasChildR(props) {
+    if (this.args) 
+      for (let arg of this.args)
+        if (arg.check(props) || arg.hasChildR(props))
+          return true;
+    return false;
+  }
+
+  /**
+   * check if this Node has a Node in its args with these `props`
+   * @param props properties to check Nodes against
+   */
+  hasChild(props) {
+    if (this.args)
+      for (let arg of this.args)
+        if (arg.check(props))
+          return true;
+    return false;
+  }
+
 }
 
 Node.types = {
@@ -43,13 +76,16 @@ Node.types = {
   TUPLE: "tuple",
   SET: "set",
   ABS: "abs", // | value |
+  ELLIPSIS: "ellipsis",
+  BLANK: "blank",
 };
 
 Node.types.values = Object.values(Node.types);
 
 Node.types.operators = {
-  infix: ["^", "*", "/", "+", "-", "&&", "||", "==", ">=", "<=", "<", ">", "="],
+  infix: ["^", "*", "/", "+", "-", ">=", "<=", "<", ">", "=", "!="],
   postfix: ["!"],
 };
 
 module.exports = Node;
+
