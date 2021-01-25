@@ -68,7 +68,6 @@ console.log(mathParser.parse('f(x).someProperty.fn(y).result ^ 2  \n!', {
 |`+`|3|left-to-right|
 |`-`|3|left-to-right|
 |`!=`|2|left-to-right|
-|`==`|2|left-to-right|
 |`>=`|2|left-to-right|
 |`<=`|2|left-to-right|
 |`>`|2|left-to-right|

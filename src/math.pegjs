@@ -171,7 +171,7 @@ Operation1 "operation or factor" =
   }
 
 Operation2 "operation or factor" = 
-  head:Operation3 tail:(_ ("==" / "!=" / ">=" / "<=" / ">" / "<") _ Operation3)* {
+  head:Operation3 tail:(_ ("!=" / ">=" / "<=" / ">" / "<") _ Operation3)* {
         // left to right
     return tail.reduce(function(result, element) {
       return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
