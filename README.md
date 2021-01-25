@@ -81,7 +81,7 @@ The `parse` function returns a `Node`, which may have array of other `Node`s in 
 
 ### Node.prototype.type
 
-The `Node` type, see the [available type](#nodetypes).
+The `Node` type, see the [available types](#nodetypes).
 
 ### Node.prototype.isBuiltIn
 
@@ -105,7 +105,8 @@ console.log(node.check({
 
 ### Node.prototype.checkType(type: string)
 
-You can check for `type` directly here.
+You can check for `type` directly here, but why not `node.type === "the_type"`?
+Because `"the_type"` is not a valid type, `.checkType` will throw if you passed invalid type.
 
 ```js
 let node = mathParser.parse("1");
