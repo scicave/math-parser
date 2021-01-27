@@ -1,13 +1,9 @@
 const { node } = require("./utils");
 
 module.exports = [
-
   {
     math: "2xsiny",
-    struct: node.am([
-      node.am([2, "x"]),
-      node.BIF("sin", ["y"]),
-    ]),
+    struct: node.am([node.am([2, "x"]), node.BIF("sin", ["y"])]),
   },
 
   {
@@ -17,5 +13,4 @@ module.exports = [
       node.BIF("sin", ["y"]),
     ]),
   },
-
 ];

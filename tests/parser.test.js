@@ -8,7 +8,7 @@ let quite = 0; // no struct or node logged when a test fails
 expect.extend({
   /**
    * @param {parser.Node} node
-   * @param {Obj} struct
+   * @param {Object} struct
    */
   toHaveStructure(node, struct) {
     function failed(msg) {
@@ -54,7 +54,7 @@ expect.extend({
 
     function _check(n, s, nPath, sPath) {
 
-      if (nPath !== sPath) return fail(`AST paths are different: ${nPath},,, ${sPath}`);
+      if (nPath !== sPath) return failed(`AST paths are different: ${nPath},,, ${sPath}`);
 
       if (!(n && s)) return;
       if (typeof s === 'number') {
@@ -69,7 +69,7 @@ expect.extend({
         }
         for (let i = 0; i < s.length; i++) {
           if (typeof n[i] !== 'object')
-            if(n[i] !== s[i]) return fail(`${nPath}[${i}] !== ${sPath}[${i}]`);
+            if(n[i] !== s[i]) return failed(`${nPath}[${i}] !== ${sPath}[${i}]`);
             else continue;
           let c = _check(n[i], s[i], nPath + `[${i}]`, sPath + `[${i}]`);
           if (c) return c; // here a problem is found

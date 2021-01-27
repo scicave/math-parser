@@ -1,7 +1,6 @@
 const { node } = require("./utils");
 
 module.exports = [
-  
   {
     math: "1+pi",
     struct: node.op("+", [1, "pi"]),
@@ -9,16 +8,12 @@ module.exports = [
 
   {
     math: "1+xpi",
-    struct: node.op("+", [1,
-      node.am([node.am(["x", "p"]), "i"]),
-    ]),
+    struct: node.op("+", [1, node.am([node.am(["x", "p"]), "i"])]),
   },
 
   {
     math: "1+pix",
-    struct: node.op("+", [1,
-      node.am([node.am(["p", "i"]), "x"]),
-    ]),
+    struct: node.op("+", [1, node.am([node.am(["p", "i"]), "x"])]),
   },
 
   {
@@ -28,21 +23,17 @@ module.exports = [
 
   {
     math: "2^2pi",
-    struct: node.op("^", [2,
-      node.am([2, "pi"]),
-    ]),
+    struct: node.op("^", [2, node.am([2, "pi"])]),
   },
 
   {
     math: "2^2pi!",
-    struct: node.op("^", [2,
-      node.am([2, node.pOP("!", ["pi"])]),
-    ]),
+    struct: node.op("^", [2, node.am([2, node.pOP("!", ["pi"])])]),
   },
 
   {
     math: "1+pi()",
-    error: true, errorType: "syntax"
+    error: true,
+    errorType: "syntax",
   },
-
 ];

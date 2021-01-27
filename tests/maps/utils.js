@@ -3,7 +3,11 @@ class NodeCreator {
   constructor(options) {
     this.setOptions(options);
     this.ellipsis = { type: "ellipsis" };
-    this.blank = { type: "blank" };
+  }
+
+  // this feature is removed
+  get blank() {
+    throw new Error("blankTrems are not valid syntax any more.");
   }
 
   setOptions(options = {}) {
@@ -77,7 +81,7 @@ class NodeCreator {
       !Array.isArray(args)
     )
       this.invalidArgs("postfix operator");
-    return { type: "postfix operator", name, args };
+    return { type: "operator", operatorType: "postfix", name, args };
   }
 
   am(args) {
@@ -98,8 +102,7 @@ class NodeCreator {
   }
 
   abs(args) {
-    if (!Array.isArray(args) || args.length !== 1)
-      this.invalidArgs("abs");
+    if (!Array.isArray(args) || args.length !== 1) this.invalidArgs("abs");
     return { type: "abs", args };
   }
 
@@ -113,16 +116,16 @@ class NodeCreator {
     return { type: "set", args };
   }
 
-  interval(args, extra={}) {
+  interval(args, extra = {}) {
     if (!Array.isArray(args)) this.invalidArgs("interval");
     return { type: "interval", args, ...extra };
   }
 
   matrix(args) {
-    if (!Array.isArray(args) || args.find(i=>!Array.isArray(i))) this.invalidArgs("matrix");
+    if (!Array.isArray(args) || args.find((i) => !Array.isArray(i)))
+      this.invalidArgs("matrix");
     return { type: "matrix", args };
   }
-
 }
 
 exports.node = new NodeCreator();

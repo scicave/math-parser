@@ -1,10 +1,10 @@
 const { node } = require("./utils");
 
 module.exports = [
-
   {
     math: "",
-    error: true, errorType: "syntax"
+    error: true,
+    errorType: "syntax",
   },
 
   {
@@ -13,99 +13,75 @@ module.exports = [
       node.op("+", [
         1,
         node.op("*", [
-          node.op("/", [
-            node.op("^", [2,1.2]),
-            node.pOP("!", ["x"]),
-          ]),
+          node.op("/", [node.op("^", [2, 1.2]), node.pOP("!", ["x"])]),
           -5.236,
         ]),
       ]),
-      -2
+      -2,
     ]),
   },
 
   {
     math: "5^2x!",
-    struct: node.op("^", [
-      5,
-      node.am([
-        2,
-        node.pOP("!", ["x"])
-      ])
-    ]),
+    struct: node.op("^", [5, node.am([2, node.pOP("!", ["x"])])]),
   },
 
   {
     math: "a >= 2",
-    struct: node.op(">=", ["a", 2])
+    struct: node.op(">=", ["a", 2]),
   },
 
   {
     title: "should throw(syntax): invalid operator type",
     math: "x == 2",
-    error: true, errorType: Error
+    error: true,
+    errorType: Error,
   },
 
   {
     math: "x = 2",
-    struct: node.op("=", ["x", 2])
+    struct: node.op("=", ["x", 2]),
   },
 
   {
     math: "||x - y| - |y - z||",
-    struct: node.abs([node.op("-", [
-      node.abs([node.op("-", ["x", "y"])]),
-      node.abs([node.op("-", ["y", "z"])])
-    ])])
+    struct: node.abs([
+      node.op("-", [
+        node.abs([node.op("-", ["x", "y"])]),
+        node.abs([node.op("-", ["y", "z"])]),
+      ]),
+    ]),
   },
 
   {
     math: "2xysina(2)",
     struct: node.am([
-      node.am([
-        node.am([
-          node.am([2,"x"]),
-          "y"
-        ]),
-        node.BIF("sin", ["a"])
-      ]),
-      2
-    ])
+      node.am([node.am([node.am([2, "x"]), "y"]), node.BIF("sin", ["a"])]),
+      2,
+    ]),
   },
 
   {
-    title: "should parse: \"a\" as function when defined in options.functions",
+    title: 'should parse: "a" as function when defined in options.functions',
     math: "2xysina(2)",
     parserOptions: { functions: ["a"] },
     struct: node.am([
-      node.am([
-        node.am([2,"x"]),
-        "y"
-      ]),
-      node.BIF("sin", [node.F("a", [2])])
-    ])
+      node.am([node.am([2, "x"]), "y"]),
+      node.BIF("sin", [node.F("a", [2])]),
+    ]),
   },
 
   {
     math: "2x^4y",
-    struct: node.am([
-      2,
-      node.op("^", [
-        "x",
-        node.am([4, "y"])
-      ])
-    ])
+    struct: node.am([2, node.op("^", ["x", node.am([4, "y"])])]),
   },
 
   {
     math: "2x^4y!",
     struct: node.am([
       2,
-      node.op("^", [
-        "x",
-        node.am([4, node.pOP("!", ["y"])])
-      ])
-    ])
+      node.op("^", ["x", node.am([4, node.pOP("!", ["y"])])]),
+    ]),
   },
 
   {
@@ -114,12 +90,9 @@ module.exports = [
       2,
       node.op("^", [
         "x",
-        node.am([
-          node.am([4, "y"]),
-          node.BIF("sin", [node.pOP("!", ["x"])])
-        ])
-      ])
-    ])
+        node.am([node.am([4, "y"]), node.BIF("sin", [node.pOP("!", ["x"])])]),
+      ]),
+    ]),
   },
 
   {
@@ -128,12 +101,9 @@ module.exports = [
       2,
       node.op("^", [
         "x",
-        node.am([
-          node.am([4, "y"]),
-          node.BIF("sin", [node.pOP("!", ["x"])])
-        ])
-      ])
-    ])
+        node.am([node.am([4, "y"]), node.BIF("sin", [node.pOP("!", ["x"])])]),
+      ]),
+    ]),
   },
 
   {
@@ -142,15 +112,8 @@ module.exports = [
       2,
       node.op("^", [
         "x",
-        node.am([
-          -45.1,
-          node.op("^", [
-            "y", node.BIF("sin", ["x"])
-          ])
-        ])
-      ])
-    ])
+        node.am([-45.1, node.op("^", ["y", node.BIF("sin", ["x"])])]),
+      ]),
+    ]),
   },
-
-]
-
+];
