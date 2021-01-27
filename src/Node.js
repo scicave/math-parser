@@ -68,7 +68,6 @@ Node.types = {
   FUNCTION: "function",
   AUTO_MULT: "automult",
   OPERATOR: "operator",
-  POSTFIX_OPERATOR: "postfix operator",
   MEMBER_EXPRESSION: "member expression",
   PARENTHESES: "parentheses",
   INTERVAL: "interval",
