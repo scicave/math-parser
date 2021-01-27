@@ -39,6 +39,8 @@ let grammarFiles = [
       Node: "./Node.js",
       preParse: "./preParse.js",
       version: "./version.js",
+      defaultOptions: "./defaultOptions.js",
+      merge: "./merge.js",
       OptionsError: "./OptionsError.js",
     },
   },
