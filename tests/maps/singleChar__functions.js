@@ -38,15 +38,15 @@ module.exports = [
 
   {
     math: "asdx",
-    parserOptions: { builtInFunctions: { primary: ["asd"] } },
+    parserOptions: { builtinFunctions: { primary: ["asd"] } },
     struct: node.BIF("asd", ["x"]),
   },
 
   {
     title:
-      "should parse: as automult when not found in builtInFunction or functions",
+      "should parse: as automult when not found in builtinFunction or functions",
     math: "sin(2)",
-    parserOptions: { builtInFunctions: { primary: [], secondary: [] } },
+    parserOptions: { builtinFunctions: { primary: [], secondary: [] } },
     struct: node.am([node.am([node.am(["s", "i"]), "n"]), 2]),
   },
 

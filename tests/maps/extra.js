@@ -117,8 +117,6 @@ module.exports = [
   },
 
   {
-    title:
-      "should parse: as tuple not interval when trailing comma after 2 terms",
     math: "(a,b,)",
     // struct: node.tuple(["a", "b"])
     error: true,
@@ -167,8 +165,8 @@ module.exports = [
   },
 
   {
-    math: "f(1,4,...)",
-    struct: node.am(["f", node.tuple([1, 4, node.ellipsis])]),
+    math: "a(1,4,...)",
+    struct: node.am(["a", node.tuple([1, 4, node.ellipsis])]),
   },
 
   {
@@ -181,11 +179,60 @@ module.exports = [
     struct: node.matrix([[1, 4, node.ellipsis]]),
   },
 
-  {
-    math: "1 + 2 + ... + 10",
-    struct: node.op("+", [
-      node.op("+", [node.op("+", [1, 2]), node.ellipsis]),
-      10,
-    ]),
-  },
+  // ************************
+  //    sequence operators
+  // ************************
+
+  // {
+  //   math: "1 + 2 + ... + 10",
+  //   struct: node.sqop("+", [1, 2, node.ellipsis, 10]),
+  // },
+
+  // {
+  //   math: "... + 10",
+  //   error: true,
+  //   errorType: "syntax",
+  // },
+
+  // {
+  //   math: "10 + ...",
+  //   error: true,
+  //   errorType: "syntax",
+  // },
+
+  // {
+  //   math: "10 + ... + 10",
+  //   struct: node.sqop("+", [10, node.ellipsis, 10]),
+  // },
+
+  // {
+  //   math: "10 + ... * a + 10",
+  //   error: true,
+  //   errorType: "syntax",
+  // },
+
+  // {
+  //   math: "10 + 1 * ... * a + 10",
+  //   struct: node.op("+", [
+  //     node.op("+", [10, node.sqop("*", [1, node.ellipsis, "a"])]),
+  //     10,
+  //   ]),
+  // },
+
+  // {
+  //   math: "y + a * ... + 10",
+  //   error: true,
+  //   errorType: "syntax",
+  // },
+
+  // {
+  //   math: "y + a * sinx * ... - 10",
+  //   struct: node.op("-", [
+  //     node.op("+", [
+  //       "y",
+  //       node.sqop("*", ["a", node.BIF("sin", ["x"]), node.ellipsis]),
+  //     ]),
+  //     10,
+  //   ]),
+  // },
 ];

@@ -3,11 +3,11 @@ const { node } = require("./utils");
 module.exports = [
   {
     title:
-      "should parse: as automult when not found in builtInFunction or functions",
+      "should parse: as automult when not found in builtinFunction or functions",
     math: "sin(2)",
     parserOptions: {
       singleCharName: false,
-      builtInFunctions: { primary: [], secondary: [] },
+      builtinFunctions: { primary: [], secondary: [] },
     },
     struct: node.am(["sin", 2]),
   },
@@ -16,6 +16,13 @@ module.exports = [
     math: "sin2",
     parserOptions: { singleCharName: false },
     struct: "sin2",
+  },
+
+  {
+    title: "should parse: asd as builtin function when passed throw options",
+    math: "asd(2)",
+    parserOptions: { builtinFunctions: { primary: [], secondary: ["asd"] } },
+    struct: node.BIF("asd", [2]),
   },
 
   {
@@ -42,6 +49,7 @@ module.exports = [
   },
 
   {
+    skip: true,
     math: "ax sin 3y",
     parserOptions: { singleCharName: false },
     struct: node.am(["ax", node.BIF("sin", [node.am([3, "y"])])]),
@@ -49,16 +57,13 @@ module.exports = [
 
   {
     title:
-      "should use function id as reference (or variable) when strict=false",
+      "can't use function id as reference (variable)",
     math: "(2longFuncName! + x)",
     parserOptions: {
       singleCharName: false,
-      keepParen: true,
       functions: ["longFuncName"],
     },
-    struct: node.paren([
-      node.op("+", [node.am([2, node.pOP("!", ["longFuncName"])]), "x"]),
-    ]),
+    error: true, errorType: "syntax",
   },
 
   {
@@ -69,8 +74,7 @@ module.exports = [
       strict: true,
       functions: ["longFuncName"],
     },
-    error: true,
-    errorType: "syntax",
+    error: true, errorType: "syntax",
   },
 
   {
@@ -82,10 +86,4 @@ module.exports = [
     ]),
   },
 
-  {
-    title: "should parse: sqrt as builtin function when passed throw options",
-    math: "sqrt(2)",
-    parserOptions: { builtInFunctions: { primary: [], secondary: ["sqrt"] } },
-    struct: node.BIF("sqrt", [2]),
-  },
 ];

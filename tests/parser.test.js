@@ -155,34 +155,55 @@ function getTitle(__test) {
 // inside `jest.describe` 
 function doTest(on, title) {
   describe(title, ()=>{
-    if (on instanceof Array) {
+
+    // awesome, we have some tests here
+    if (on instanceof Array)
+    {
       on.forEach((__test) => {
+        // the test title
         let title = getTitle(__test);
+        // the funcction to be passed to jest.test
         let fn = () => {
+          debugger;
+          // expect it to throw
           if (__test.error) {
             expect(()=>parser.parse(__test.math, __test.parserOptions)).toThrow(
               __test.errorType === "syntax" ? parser.SyntaxError :
               __test.errorType === "options" ? parser.OptionsError :
               __test.errorType
             );
-          } else {
+          }
+          // or expect it to parse successfully
+          else {
             expect(parser.parse(__test.math, __test.parserOptions)).toHaveStructure(__test.struct);
           }
         };
+        
+        // check some other __test configs
         if (__test.only) 
           test.only(title, fn);
-        else if (!__test.skip)
-          test(title, fn);
+        else if (__test.skip)
+          test.skip(title, fn); // finally test as usual
+        else
+          test(title, fn); // finally test as usual
       });
-    } else if (typeof on === 'object') {
+    }
+
+    // we have another sub-group, `jest.descripe`
+    else if (typeof on === 'object')
+    {
       for (let p in on) {
         doTest(on[p], p);
       }
-    } else { 
+    }
+
+    // unexpected thing happened
+    else
+    { 
       throw new Error('can\'t do tests on ' + typeof on);
     }
+
   });
 }
 
 doTest(testsMap, "test parse function");
-
