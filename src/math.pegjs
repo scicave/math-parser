@@ -450,6 +450,8 @@ commaExpression =
       tail.unshift(head);
       return tail;
     }
+    if (head.type === 'ellipsis')
+      error("can't use ellipsis as a stand-alone expression");
     return head;
   }
 
