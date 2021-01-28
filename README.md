@@ -29,7 +29,7 @@ const mathParser = require('@scicave/math-parser'); /*
 */
 ```
 
-Examples: 
+Examples:
 
 ```js
 console.log(mathParser.parse(' 1.5 * 5  ^x !'));
@@ -59,20 +59,20 @@ console.log(mathParser.parse('f(x).someProperty.fn(y).result ^ 2  \n!', {
 
 ## Operators Schema
 
-|Operator|Precedence|Associativity|
-|------|------|-------|
-|`!`|6|N/A|
-|`^`|5|left-to-right|
-|`*`|4|left-to-right|
-|`/`|4|left-to-right|
-|`+`|3|left-to-right|
-|`-`|3|left-to-right|
-|`!=`|2|left-to-right|
-|`>=`|2|left-to-right|
-|`<=`|2|left-to-right|
-|`>`|2|left-to-right|
-|`<`|2|left-to-right|
-|`=`|1|left-to-right|
+| Operator | Precedence | Associativity |
+| -------- | ---------- | ------------- |
+| `!`      | 6          | N/A           |
+| `^`      | 5          | left-to-right |
+| `*`      | 4          | left-to-right |
+| `/`      | 4          | left-to-right |
+| `+`      | 3          | left-to-right |
+| `-`      | 3          | left-to-right |
+| `!=`     | 2          | left-to-right |
+| `>=`     | 2          | left-to-right |
+| `<=`     | 2          | left-to-right |
+| `>`      | 2          | left-to-right |
+| `<`      | 2          | left-to-right |
+| `=`      | 1          | left-to-right |
 
 ## AST Node
 
@@ -82,11 +82,11 @@ The `parse` function returns a `Node`, which may have array of other `Node`s in 
 
 The `Node` type, see the [available types](#nodetypes).
 
-### Node.prototype.isBuiltIn
+### Node.prototype.isBuiltin
 
 If the `Node` is either `id` or `function` it maybe a builtin.
 
-See [builtInFunctions](#builtInfunctions), [builtInIDs](#builtinids). 
+See [builtinFunctions](#builtinfunctions), [builtinIDs](#builtinids).
 
 ### Node.prototype.check(props: Object)
 
@@ -130,7 +130,7 @@ The same as `hasChild`, but recursively.
 
 ```js
 let node = mathParser.parse("sin(1+2)");
-// { type: "function", name: "sin", args: [...], isBuiltIn: true }
+// { type: "function", name: "sin", args: [...], isBuiltin: true }
 console.log(node.hasChildR({ type: "number", value: 1 }));
 // true
 ```
@@ -152,57 +152,58 @@ When invalid options passed, `mathParser.OptionsError` is thrown.
 Type = `boolean`, default: `true`.
 
 To perform multiplication in these cases:
+
 1. `2x`
 2. `sinxcosx`
 3. `sinx(5y)`
+
 > Notice: `sinxcosx` when `singleCharName` is false will be a variable name
 
 ### .singleCharName
 
 Type = `boolean`, default: `true`.
 
-Maths conventionally works with single char named variables and constants, but in programming languages you have freedom. The convention in programming is to use multi-char named identifier. See: [options.builtInIDs](#builtinids).
+Maths conventionally works with single char named variables and constants, but in programming languages you have freedom. The convention in programming is to use multi-char named identifier. See: [options.builtinIDs](#builtinids).
 
 When a member expression is found, properties and methods are allowed to be multi-char, despite of `options.singleCharName`, see: `options.extra.memberExpressions`.
 
-You can use `a1, a2, ...` as single-char names.
+You can use `a1`, `a2`, etc... as single-char names.
 
 ### .extra
 
-Default: every thing is allowed. 
+Default: every thing is allowed.
 
 - `memberExpressions`, for example:
-    - `p.x`
-    - `point.x`
-    - `f(x).someProperty.fn(y).result`: valid syntax in both cases of `singleCharName`.
-    - .......... etc, and so on.
+  - `p.x`
+  - `point.x`
+  - `f(x).someProperty.fn(y).result`: valid syntax in both cases of `singleCharName`.
+  - .......... etc, and so on.
 - `intervals`: true or false, will return node with properties `{ startInlusive: boolean, endInclusive: boolean }`.
-    - `[1,2]`
-    - `(-.5, infinity)`
-    - `(-pi, 1]`
-    - `[2,5)`
+  - `[1,2]`
+  - `(-.5, infinity)`
+  - `(-pi, 1]`
+  - `[2,5)`
 - `sets`: e.g., `{ 1, sqrt(pi), ..., sqrt(pi)^10 }`
-- `tuples `: e.g., `(1, 2, x, ...)`
+- `tuples`: e.g., `(1, 2, x, ...)`
 - `matrices`: e.g., `[ sinx, 1, 3; cosy, sqrt(3), 0 ]`
 - `ellipsis`: to allow the 3-dots "...", e.g., `{ 1, 3, 5, ... }`
-- `trailingComma`: to allow some expressions like `f(1,2,)`
-- `blankTerms`: to allow some expressions like `f(1,,2)`
 
 ----------------------
 
 Notes
 
-* These expression are valid if allowed in `options.extra.{ellipsis, blankTerms}`:
-  * `(..., a)`
-  * `(, a)`
-  * `(a, )` is tuple depending on extra options.
-* Intervals, should have 2 terms as math expression:
-  * `(..., a]`: throw syntax error
-  * `(..., a)`: is a tuple, parsed if `extra.ellipsis ` is `true`
-  * `[2, 1, ]`: is a matrix, parsed if `extra.trailingComma` is `true`
-  * `(1, 2,)`: is a tuple, parsed if `extra.trailingComma ` is `true`
-  * `[, a]`: is a matrix, parsed if `extra.blankTerms` is `true`
-  * `(, a)`: is a tuple, parsed if `extra.blankTerms` is `true`
+- You can use ellipsis as valid `Factor`, e.g., `1 + 2 + ... + 10`
+- This expression will throw syntax error, `1 + 2 + (...) + 10`
+- `extra.ellipsis` is more customizable:
+  - `extra.ellipsis.matrices: boolean`
+- `extra.ellipsis.tuples: boolean`
+  - `extra.ellipsis.sets: boolean`
+  - `extra.ellipsis.funcArgs: boolean`
+  
+- Intervals, should have 2 terms as math expression:
+  - `(..., a]`: throw syntax error
+  - `(..., a)`: is a tuple, parsed if `extra.ellipsis` is `true`
+  - `[..., a]`: is a matrix, parsed if `extra.matrices` is `true`
 
 ### .functions
 
@@ -212,11 +213,11 @@ When `autoMult` is `true`, some expression like `f(x)` will be considered
 as multiplication `f*(x)`, in order to parse it as a function with name = "f",
 you can pass `options.functions = ['f']`.
 
-When `singleCharName == true`, you should pass single-char functions. 
+When `singleCharName == true`, you should pass single-char functions.
 
 When parsing `a.method(...)`, regardless of `singleCharName`, method names will be always multi-char name.
 
-```
+```text
         member expression
               /\
             /    \
@@ -226,22 +227,22 @@ When parsing `a.method(...)`, regardless of `singleCharName`, method names will 
    = "a" |          | args = [ ... ]
 ```
 
-### .builtInIDs
+### .builtinIDs
 
 Type = `Array<string>`, default = `["infinity", "pi", "phi"]`;
 
 To use multi-char names when setting [`singleCharName`](#singlecharname) to true, for example:
 
-|Math Expression| Equivalent To | singleCharName |
-| ------------- | ------------- | -------------- |
-| `1 + pix`  | `1 + p*i*x`|`true`|
-| `1 + xpi` | `1 + x*p*i`|`true`|
-|`1 + x pi`| `1 + x*pi`|`true`|
-|`1 + pi`| `1 + pi`|`true`|
-|`1 + pi x` |  `1 + pi*x`|`false`|
-|`1 + pix` |  `1 + pix`|`false`|
+| Math Expression | Equivalent To | singleCharName |
+| --------------- | ------------- | -------------- |
+| `1 + pix`       | `1 + p*i*x`   | `true`         |
+| `1 + xpi`       | `1 + x*p*i`   | `true`         |
+| `1 + x pi`      | `1 + x*pi`    | `true`         |
+| `1 + pi`        | `1 + pi`      | `true`         |
+| `1 + pi x`      | `1 + pi*x`    | `false`        |
+| `1 + pix`       | `1 + pix`     | `false`        |
 
-### .builtInFunctions
+### .builtinFunctions
 
 Type = `{ primary: Array<string>, secondary: Array<string> }`, default 👇.
 
@@ -270,18 +271,18 @@ Type = `boolean`, default = `false`.
 
 If you want to make grouping parenthesis nodes in the result AST, `{ type: 'parenthesis', ... }`.
 
-
 ## Unsure about
 
 In these confusing cases, you can handle the parsed expression to transform to what you want.
 
 - `5^2x!`
+  To be `5^(2x!)` or `(5^2)(x!)` or `(5^2x)!`, ...
+  The current result AST is equivalent to `5^(2(x!))`.
 
-To be `5^(2x!)` or `(5^2)(x!)` or `(5^2x)!`, ...
-The current result AST is equivalent to `5^(2(x!))`.
-
+- `x!y`
+  I am not sure whether parse as `(x!)(y)` or to throw a `SyntaxError`.
+  Now it is parsed with no errors.
 
 ## License
 
 MIT
-

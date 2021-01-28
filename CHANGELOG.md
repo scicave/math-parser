@@ -1,3 +1,17 @@
+# Unreleased, v6.0.0
+
+## Breaking
+
+- Blank terms are not valid syntax any more.
+- Trailing comma are not valid syntax any more.
+  I think it is not math, it is more related to programming langs.
+  
+## Added
+
+- You can use ellipsis as valid `Factor`, e.g., `1 + 2 + ... + 10`
+- This expression will throw syntax error, `1 + 2 + (...) + 10`
+- `options.operatorSequence` || `options.extra.ellipsis.infixOperators`
+
 # 24 Jan 2021, v5.0.0
 
 ## Breaking

@@ -26,7 +26,7 @@
     "prod": "node ./tools/generate-version-file.js && npm run build && npm run bundle",
     "build": "node ./tools/build.js",
     "bundle": "parcel build ./lib/index.js -d ./lib -o bundle.min.js && parcel build ./lib/index.js --no-minify -d ./lib -o bundle.js",
-    "test": "jest ./tests",
+    "test": "jest ./tests --runInBand",
     "test:ci": "npm t -- --ci --detectOpenHandles --forceExit",
     "test:watch": "npm t -- --watch",
     "preversion": "npm t",
