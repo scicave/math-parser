@@ -5,8 +5,44 @@
 
 {
   // defaults are `require`d by pegjs dependencies
-  options = merge(defaultOptions, options);
-  options.operatorSequence ||=
+  options = merge({
+    autoMult: true,
+    singleCharName: true,
+    keepParen: false,
+    functions: [],
+    builtinIDs: ["infinity", "pi", "phi"],
+    // operatorSequence: true,
+    extra: {
+      memberExpressions: true,
+      intervals: true,
+      tuples: true,
+      sets: true,
+      matrices: true,
+      ellipsis: {
+        matrices: true,
+        tuples: true,
+        funcArgs: true,
+        sets: true,
+        infixOperators: true
+      },
+    },
+    builtinFunctions: {
+      primary: [
+        // can be used like "sinx, logx"
+        "sin", "cos", "tan", "sec",  "csc",  "cot", "asin", "acos", "atan",
+        "asec", "acsc", "acot", "sinh", "cosh", "tanh", "sech", "csch", "coth",
+        "ln", "log",
+      ],
+      secondary: [
+        "exp", "floor", "ceil", "round", "random", "sqrt",
+        // hyperbolic function
+        "arsinh", "arcosh", "artanh", "arsech", "arcsch", "arcoth",
+        "arcsin", "arccos", "arcotan", "arcsec", "arccsc", "arccot",
+      ],
+    },
+  }, options);
+
+  options.operatorSequence = options.operatorSequence ||
     typeof options.extra.ellipsis !== "object"
     // if it is not object, let's return false
     // it will be equivalent to options.operatorSequence || false;
@@ -21,6 +57,7 @@
   });
   
   let
+    // this will determine whether to continue parsing as BuiltinIDs or not
     factorNameMatched=false, // use for, `xpi` === `x*p*i`, to ignore builtinIDs
     // builtinFunctionName which will be assembled char by char, one after the other.
     // see pushChar function, 👇
@@ -41,7 +78,7 @@
     if (mode === "BIFPrimary")
       arr = options.builtinFunctions.primary;
     else if (mode === "BIFSecondary")
-      arr = options.builtinFunctions.secondary;
+      (arr = options.builtinFunctions.secondary);
     else throw new Error("unexpecte error, math-parser: inside pushChar");
 
     let newTitle = BIFName + c, found = false;
@@ -52,7 +89,8 @@
       }
     }
 
-    if (!found) return false;
+    if (!found)
+      return false;
     BIFName = newTitle;
     return true;
   }
@@ -66,28 +104,28 @@
       if (!options.extra.tuples)
         error('tuples syntax is not allowed');
       let ellipsisAllowed = ellipsis === 'object' ? ellipsis.tuples : ellipsis;
-      if (doesCMCE && ellipsisAllowed)
+      if (doesCMCE && !ellipsisAllowed)
         error('ellipsis is not allowed to be in tuples');
     }
     if (n.type === "set") {
       if (!options.extra.sets)
         error('sets syntax is not allowed');
       let ellipsisAllowed = ellipsis === 'object' ? ellipsis.sets : ellipsis;
-      if (doesCMCE && ellipsisAllowed)
+      if (doesCMCE && !ellipsisAllowed)
         error('ellipsis is not allowed to be in sets');
     }
     if (n.type === "matrix") {
       if (!options.extra.matrices)
         error('matrices syntax is not allowed');
       let ellipsisAllowed = ellipsis === 'object' ? ellipsis.matrices : ellipsis;
-      if (doesCMCE && ellipsisAllowed)
+      if (doesCMCE && !ellipsisAllowed)
         error('ellipsis is not allowed to be in matrices');
     }
     if (n.type === "interval") {
       if (!options.extra.intervals)
         error('intervals syntax is not allowed');
       let ellipsisAllowed = ellipsis === 'object' ? ellipsis.intervals : ellipsis;
-      if (doesCMCE && ellipsisAllowed)
+      if (doesCMCE && !ellipsisAllowed)
         error('ellipsis is not allowed to be in intervals');
     }
     n.match = {
@@ -133,8 +171,8 @@
     if (Array.isArray(node)) {
       if (node.length === 2 && options.extra.intervals)
         // make sure not have ellpsis
-        if (!node[0].type === "ellipsis" &&
-            !node[1].type === "ellipsis") {
+        if (node[0].type !== "ellipsis" &&
+            node[1].type !== "ellipsis") {
               return createNode("interval", node, { startInclusive: o==="[", endInclusive: c==="]" });
             }
       // matrix
@@ -167,12 +205,12 @@
 
 Expression "expression" = _ expr:Operation1 _ { return expr; }
 
-Operation1 "operation or factor" = 
-  head:Operation2 tail:(_ "=" _ (Operation2/Ellipsis))* {
+Operation1 "equation" = 
+  head:Operation2 tail:(_ "=" _ Operation2)* {
     // left to right
     let isOperatorSequence;
     for (let e in tail) {
-      if (t.checkType("ellipsis")) {
+      if (e.type == "ellipsis") {
         isOperatorSequence = true;
         break;
       }
@@ -191,36 +229,36 @@ Operation1 "operation or factor" =
   }
 
 // comparison operators
-Operation2 "operation or factor" = 
-  head:Operation3 tail:(_ ("!=" / ">=" / "<=" / ">" / "<") _ (Operation3/Ellipsis))* {
+Operation2 "comparison expression" = 
+  head:Operation3 tail:(_ ("!=" / ">=" / "<=" / ">" / "<") _ Operation3)* {
     // left to right
     return tail.reduce(function(result, element) {
       return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
     }, head);
   }
 
-Operation3 "operation or factor" =
-  head:Operation4 tail:(_ ("+" / "-") _ (Operation4/Ellipsis))* {
+Operation3 "addition or subtraction" =
+  head:Operation4 tail:(_ ("+" / "-") _ Operation4)* {
         // left to right
     return tail.reduce(function(result, element) {
       return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
     }, head);
   }
 
-Operation4 "operation or factor" =
-  head:Operation5 tail:(_ ("*" / "/") _ (Operation5/Ellipsis))* {
+Operation4 "mult or div" =
+  head:Operation5 tail:(_ ("*" / "/") _ Operation5)* {
         // left to right
     return tail.reduce(function(result, element) {
       return createNode('operator' , [result, element[3]], {name: element[1], operatorType: 'infix'});
     }, head);
   }
 
-Operation5 "operation or factor" =
-  head:AutoMult tail:(_ "^" _ (Ellipsis/Operation5))* {
+Operation5 "exponentail expression" =
+  head:AutoMult tail:(_ "^" _ Operation5)* {
     // left to right
     return tail.reduce(function(base, exponent) {
       let exp = exponent[3];
-      if (base.checkType("automult")) {
+      if (base.type === "automult") {
         base.args[1] = createNode('operator' , [base.args[1], exp], {name: "^", operatorType: 'infix'});
         return base;
       }
@@ -229,7 +267,7 @@ Operation5 "operation or factor" =
     }, head);
   }
 
-AutoMult "operation or factor" = /// series of multiplication or one "Factor"
+AutoMult "implicit multiplication" = /// series of multiplication or one "Factor"
   head:Factor tail:(_ FactorNotNumber)* {
     factorNameMatched = false;
     return tail.reduce(function(result, element) {
@@ -237,11 +275,13 @@ AutoMult "operation or factor" = /// series of multiplication or one "Factor"
     }, head);
   }
 
-operation5bifpArg =
-  head:(FactorNumber/ operation5bifpName)
+// sequence of automult operator but designed specially for bifPrimaryArgs 
+operation5bifpArg "argument for primarybuiltin function" =
+  head:(FactorNumber/operation5bifpName)
   tail:(_ n:operation5bifpName { return n })*
   tailtail:(_ "^" _ Operation5)*
   {
+    // reset after collecting all the args
     factorNameMatched = false;
     // when singleCharName: sinxyz,,, multiple ids after the first id
     head = tail.reduce(function(result, id) {
@@ -249,7 +289,7 @@ operation5bifpArg =
     }, head);
     return tailtail.reduce(function(base, exponent) {
       let exp = exponent[3];
-      if (base.checkType("automult")) {
+      if (base.type === "automult") {
         base.args[1] = createNode('operator' , [base.args[1], exp], {name: "^", operatorType: 'infix'});
         return base;
       }
@@ -259,19 +299,19 @@ operation5bifpArg =
   }
 
 operation5bifpName = f:(
-    BuiltinIDs /
-    !Functions n:Name { return n }
-    ) _ fac:factorial? {
-  if (fac) f = createNode('operator', [f], {name: '!', operatorType: "postfix"});
-    factorNameMatched = f.type === 'id';
+  BuiltinIDs /
+  !Functions n:Name { return n }
+  ) _ fac:factorial? {
+    if (fac) f = createNode('operator', [f], {name: '!', operatorType: "postfix"});
+    factorNameMatched = f.type === 'id'; // it maybe factorial operator
     return f;
   }
 
 Factor = FactorNumber / FactorNotNumber
 
 FactorNumber =
-n:Number _ fac:factorial? {
-  if (fac) n = createNode('operator', [n], {name: '!', operatorType: "postfix"});
+  n:Number _ fac:factorial? {
+    if (fac) n = createNode('operator', [n], {name: '!', operatorType: "postfix"});
     return n;
   }
 
@@ -299,9 +339,9 @@ Functions "functions" =
   BIFPrimary / Function
 
 BIFPrimary =
-  name:bifPrimaryNames _ exp:superScript? _ args:bifPrimaryArgs {
+  name:bifPrimaryNames _ /* exp:superScript? _ */ args:bifPrimaryArgs {
     let func = createNode('function', args, {name, isBuiltin:true});
-    if(exp) func.exp = exp;
+    /* if(exp) func.exp = exp; */
     return func;
   }
 
@@ -310,12 +350,12 @@ superScript "superscript" = "^" _ arg:Factor { return arg; }
 bifPrimaryNames =
   // reset and continue onlt if options.singleCharName
   &{ BIFName = ''; return options.singleCharName }
-  (c:char &{ return pushChar(c, "BIFPrimary") } { return c })+
+  (c:char &{ return pushChar(c, "BIFPrimary") })+
   // it may not be a complete title
   &{ return options.builtinFunctions.primary.indexOf(BIFName) > -1 } {
     return BIFName;
   } /
-  // singleCharName = false
+  // when singleCharName is false
   n:$multiCharName &{ return options.builtinFunctions.primary.indexOf(n) > -1 } { return n }
 
 bifPrimaryArgs = a:(
@@ -329,22 +369,16 @@ bifPrimaryArgs = a:(
 
 // from options.functions or a secondary builtin
 Function = 
-  name:(bifSecondaryName/$NameNME) _ args:(
-    a:(functionParenthesesNotVoid &{
-      let exists = options.functions.indexOf(name)>-1
-      || options.builtinFunctions.secondary.indexOf(name)>-1;
-      if (!exists && !options.autoMult)
-        error(`"${name}" is not a function, and autoMult is not activated`);
-      return exists;
-    }) { return a[0] } /
-    voidParentheses &{
-      let exists = options.functions.indexOf(name)>-1
-      || options.builtinFunctions.secondary.indexOf(name)>-1;
-      if (!exists)
-        error(`"${name}" is not a function, and autoMult is not activated`);
-      return true; // in case not strict mode, it is a valid function regardless of `exists`
-    } { return [] }
-  ) {
+  name:(bifSecondaryName/$nameNME) _
+  args:functionParentheses
+  &{
+    let exists = options.functions.indexOf(name)>-1
+    || options.builtinFunctions.secondary.indexOf(name)>-1;
+    if (!exists && (!args.length || !options.autoMult))
+      error(`can't use "${name}" as a function`);
+    return exists;
+  }
+  {
     let isBuiltin = options.builtinFunctions.secondary.indexOf(name)>-1;
     return createNode('function', args, { name, isBuiltin });
   }
@@ -353,7 +387,7 @@ Function =
 bifSecondaryName =
   // reset and continue onlt if options.singleCharName
   &{ BIFName = ''; return options.singleCharName }
-  (c:char &{ return pushChar(c, "BIFSecondary") } { return c })+
+  (c:char &{ return pushChar(c, "BIFSecondary") })+
   // it may not be a complete title
   &{ return options.builtinFunctions.secondary.indexOf(BIFName) > -1 } {
     return BIFName;
@@ -367,16 +401,14 @@ MultiCharFunction =
   }
 
 functionParentheses =
-  a:("(" b:commaExpression ")" { return b } / voidParentheses { return [] }) {
-    return Array.isArray(a) ? a : [a];
-  }
+  functionParenthesesNotVoid / voidParentheses
 
 functionParenthesesNotVoid =
   "(" a:commaExpression ")" {
     return Array.isArray(a) ? a : [a];
   }
 
-// related to functions
+// related to functions only
 voidParentheses = "(" _ ")" { return [] }; 
 
 // ===============================
@@ -398,10 +430,11 @@ TupleOrExprOrParenOrIntervalOrSetOrMatrix =
 // ===============================
 
 commaSemiColonExpression
-  = head:commaExpression tail:(_ ";" _ commaExpression)* {
+  // no need for spaces around ";", they already exist
+  = head:commaExpression tail:(";" commaExpression)* {
     if (tail.length) {
       head = Array.isArray(head) ? head : [head];
-      tail = tail.map(e=>Array.isArray(e[3]) ? e[3] : [e[3]]);
+      tail = tail.map(e=>Array.isArray(e[1]) ? e[1] : [e[1]]);
       // tail now is a 2d array
       return [head].concat(tail); // return 2d array
     }
@@ -409,28 +442,16 @@ commaSemiColonExpression
   }
 
 // there is spaces around expressions already no need for _ rule
-commaExpression = body:(
-
-    head:Expression
-    tail:("," a:(Expression / CommaExpressionEllipsis) { return a })*
-    {
-      return { head, tail };
+commaExpression =
+  head:(Expression/CommaExpressionEllipsis)
+  tail:("," a:(Expression/CommaExpressionEllipsis) { return a })*
+  {
+    if (tail.length){
+      tail.unshift(head);
+      return tail;
     }
-
-  / head:(Ellipsis)
-    tail:("," a:(Expression / CommaExpressionEllipsis) { return a })+
-    {
-      return { head, tail };
-    }
-
-  ) {
-      let { head, tail } = body;
-      if (tail.length){
-        tail.unshift(head);
-        return tail;
-      }
-      return head;
-    }
+    return head;
+  }
 
 // put spaces around '...' here, use it directly there
 Ellipsis = _ "..." _ { return createNode("ellipsis") }
@@ -474,7 +495,7 @@ Name "name" = MemberExpressionName / NameNME
 
 // not member expression
 
-NameNME = _name {
+NameNME = nameNME {
   let name = text();
 
   //#region checking if function id is used as variable id
@@ -482,7 +503,7 @@ NameNME = _name {
   er = options.builtinFunctions.primary.indexOf(name) > -1
     || options.builtinFunctions.secondary.indexOf(name) > -1
     || options.functions.indexOf(name) > -1;
-  if(er && options.strict){
+  if(er){
     error('the function "' + name + '", it used with no arguments! can not use the function a variable!');
   }
   //#endregion
@@ -495,7 +516,7 @@ MultiCharNameNME = multiCharName {
   return createNode('id', null, {name})
 }
 
-_name = &{ return !options.singleCharName } multiCharName / char[0-9]*
+nameNME = &{ return !options.singleCharName } multiCharName / char[0-9]*
 
 multiCharName "multi char name"= (char/"_")+[0-9]*
 
@@ -539,11 +560,9 @@ memberArg = MultiCharFunction / MultiCharNameNME
 //          primitives
 // ===============================
 
-w "letter or digit" = [a-zA-Z0-9]
-
 char "letter"  = [a-zA-Z]
 
-nl "newline" = "\n" / "\r\n" / "\r" / "\u2028" / "\u2029"
+nl "newline" = "\n" / "\r\n" / "\r"
 
 sp "space or tab"= [ \t]
 
