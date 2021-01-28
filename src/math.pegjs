@@ -1,3 +1,7 @@
+// TODO: fix doesCMCE for deep expression an restore its previous
+// state when completing parsing and expression
+// e.g. `f(1, {2, ... , 5})` // the function `f` now has `ellipsis` as arguments
+// because when the `set` is parsed, deosCMCE is still true 
 /**
  * Pegjs rules of the major significant parts of the exression are __PascalCased__
  * The helper rules are __camelCased__
@@ -103,28 +107,28 @@
     if (n.type === "tuple") {
       if (!options.extra.tuples)
         error('tuples syntax is not allowed');
-      let ellipsisAllowed = ellipsis === 'object' ? ellipsis.tuples : ellipsis;
+      let ellipsisAllowed = typeof ellipsis === 'object' ? ellipsis.tuples : ellipsis;
       if (doesCMCE && !ellipsisAllowed)
         error('ellipsis is not allowed to be in tuples');
     }
     if (n.type === "set") {
       if (!options.extra.sets)
         error('sets syntax is not allowed');
-      let ellipsisAllowed = ellipsis === 'object' ? ellipsis.sets : ellipsis;
+      let ellipsisAllowed = typeof ellipsis === 'object' ? ellipsis.sets : ellipsis;
       if (doesCMCE && !ellipsisAllowed)
         error('ellipsis is not allowed to be in sets');
     }
     if (n.type === "matrix") {
       if (!options.extra.matrices)
         error('matrices syntax is not allowed');
-      let ellipsisAllowed = ellipsis === 'object' ? ellipsis.matrices : ellipsis;
+      let ellipsisAllowed = typeof ellipsis === 'object' ? ellipsis.matrices : ellipsis;
       if (doesCMCE && !ellipsisAllowed)
         error('ellipsis is not allowed to be in matrices');
     }
     if (n.type === "interval") {
       if (!options.extra.intervals)
         error('intervals syntax is not allowed');
-      let ellipsisAllowed = ellipsis === 'object' ? ellipsis.intervals : ellipsis;
+      let ellipsisAllowed = typeof ellipsis === 'object' ? ellipsis.intervals : ellipsis;
       if (doesCMCE && !ellipsisAllowed)
         error('ellipsis is not allowed to be in intervals');
     }
@@ -404,7 +408,15 @@ functionParentheses =
   functionParenthesesNotVoid / voidParentheses
 
 functionParenthesesNotVoid =
-  "(" a:commaExpression ")" {
+  // reset then continue
+  &{ doesCMCE = false; return true }
+  "(" a:commaExpression ")"
+  {
+    let ellipsis = options.extra.ellipsis;
+    debugger;
+    let ellipsisAllowed = typeof ellipsis === 'object' ? ellipsis.funcArgs : ellipsis;
+    if (doesCMCE && !ellipsisAllowed)
+      error('ellipsis is not allowed to be an arg in a function');
     return Array.isArray(a) ? a : [a];
   }
 
@@ -459,6 +471,7 @@ commaExpression =
 Ellipsis = _ "..." _ { return createNode("ellipsis") }
 
 CommaExpressionEllipsis = e:Ellipsis {
+  console.log("asdqweqwe")
   doesCMCE = true;
   return e;
 }
