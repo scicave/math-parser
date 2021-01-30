@@ -11,6 +11,7 @@
 - You can use ellipsis as valid `Factor`, e.g., `1 + 2 + ... + 10`
 - This expression will throw syntax error, `1 + 2 + (...) + 10`
 - `options.operatorSequence` || `options.extra.ellipsis.infixOperators`
+- `"..."`, at the beginning of options array that has default value of type `Checker`. This ellipsis will put the default ones. 
 
 # 24 Jan 2021, v5.0.0
 

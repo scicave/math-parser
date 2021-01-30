@@ -171,7 +171,17 @@ You can use `a1`, `a2`, etc... as single-char names.
 
 ### .extra
 
-Default: every thing is allowed.
+All extra features are enabled.
+
+Example:
+
+```js
+mathParser.parse(tex, {
+  extra: {
+    // ...
+  }
+});
+```
 
 - `memberExpressions`, for example:
   - `p.x`
@@ -231,6 +241,14 @@ When parsing `a.method(...)`, regardless of `singleCharName`, method names will 
 
 Type = `Array<string>`, default = `["infinity", "pi", "phi"]`;
 
+If you want to expand the defaults put `"..."` as the first item in the array, at index `0`, for example:
+
+```js
+mathParser.parse(math, { builtinIDs: [ "...", "mynewID" ] });
+```
+
+
+
 To use multi-char names when setting [`singleCharName`](#singlecharname) to true, for example:
 
 | Math Expression | Equivalent To | singleCharName |
@@ -249,7 +267,9 @@ Type = `{ primary: Array<string>, secondary: Array<string> }`, default 👇.
 - `primary`: can be used like `sinx` and `logx`.
 - `secondary`: has to be used with parenthesis, `exp(pi)` and  `arcoth(1.2^2)`. The secondary builtin functions could be passed throw [options.functions](#functions), but let them be here to avoid putting them redundantly in `options.functions`.
 
-Notice, when `singleCharName == true`, all primary and secondary has to be used with parenthesis "(...)", `sinx` is considered as node with type "id" and name "sinx".
+If you want to expand the defaults put `"..."` as the first item in the array, at index `0`.
+
+Notice, when `singleCharName == true`, all primary and secondary has to be used with parenthesis "(...)", `sinx` is considered as node with type `"id"` and name `"sinx"`.
 
 ```json
 ////////    primary   ///////
@@ -271,7 +291,7 @@ Type = `boolean`, default = `false`.
 
 If you want to make grouping parenthesis nodes in the result AST, `{ type: 'parenthesis', ... }`.
 
-## Unsure about
+## Ambiguous expressions
 
 In these confusing cases, you can handle the parsed expression to transform to what you want.
 
