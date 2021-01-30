@@ -7,31 +7,26 @@ const noSingleChar__memExpr = require("./noSingleChar__memExpr");
 const noSingleChar__functions = require("./noSingleChar__functions");
 const noSingleChar__autoMult = require("./noSingleChar__autoMult");
 const noSingleChar__BID = require("./noSingleChar__BID");
-const OptionsError = require("./OptionsError");
+const options = require("./options");
 const extra = require("./extra");
-const keepParentheses = require("./keepParentheses");
 
 module.exports = {
   basic,
-  options: {
-    OptionsError,
-    keepParentheses,
-    extra,
+  options,
+  extra,
 
-    "singleCharName=true": {
-      "member expression": singleChar__memExpr,
-      "function": singleChar__functions,
-      "auto multiplication": singleChar__autoMult,
-      "builtInVariables": singleChar__BID,
-    },
+  "singleCharName=true": {
+    "member expression": singleChar__memExpr,
+    "function": singleChar__functions,
+    "auto multiplication": singleChar__autoMult,
+    "builtInVariables": singleChar__BID,
+  },
 
-    "singleCharName=false": {
-      "member expression": noSingleChar__memExpr,
-      "functions": noSingleChar__functions,
-      "auto multiplication": noSingleChar__autoMult,
-      "builtInVariables": noSingleChar__BID,
-    }
-
+  "singleCharName=false": {
+    "member expression": noSingleChar__memExpr,
+    "functions": noSingleChar__functions,
+    "auto multiplication": noSingleChar__autoMult,
+    "builtInVariables": noSingleChar__BID,
   }
 };
 

@@ -8,58 +8,80 @@
  */
 
 {
-  // defaults are `require`d by pegjs dependencies
-  options = merge({
-    autoMult: true,
-    singleCharName: true,
-    keepParen: false,
-    functions: [],
-    builtinIDs: ["infinity", "pi", "phi"],
-    // operatorSequence: true,
-    extra: {
-      memberExpressions: true,
-      intervals: true,
-      tuples: true,
-      sets: true,
-      matrices: true,
-      ellipsis: {
-        matrices: true,
+
+  {
+    let defaultBIFprimary = [
+      // can be used like "sinx, logx"
+      "sin", "cos", "tan", "sec",  "csc",  "cot", "asin", "acos", "atan",
+      "asec", "acsc", "acot", "sinh", "cosh", "tanh", "sech", "csch", "coth",
+      "ln", "log",
+    ];
+    
+    let defaultBIFsecondary = [
+      "exp", "floor", "ceil", "round", "random", "sqrt",
+      // hyperbolic function
+      "arsinh", "arcosh", "artanh", "arsech", "arcsch", "arcoth",
+      "arcsin", "arccos", "arcotan", "arcsec", "arccsc", "arccot",
+    ];
+    
+    let defaultBIDs = ["infinity", "pi", "phi"];
+    
+    let defaultOptions = {
+      autoMult: true,
+      singleCharName: true,
+      keepParen: false,
+      functions: [],
+      builtinIDs: defaultBIDs,
+      // operatorSequence: true,
+      extra: {
+        memberExpressions: true,
+        intervals: true,
         tuples: true,
-        funcArgs: true,
         sets: true,
-        infixOperators: true
+        matrices: true,
+        ellipsis: {
+          matrices: true,
+          tuples: true,
+          funcArgs: true,
+          sets: true,
+          infixOperators: true
+        },
       },
-    },
-    builtinFunctions: {
-      primary: [
-        // can be used like "sinx, logx"
-        "sin", "cos", "tan", "sec",  "csc",  "cot", "asin", "acos", "atan",
-        "asec", "acsc", "acot", "sinh", "cosh", "tanh", "sech", "csch", "coth",
-        "ln", "log",
-      ],
-      secondary: [
-        "exp", "floor", "ceil", "round", "random", "sqrt",
-        // hyperbolic function
-        "arsinh", "arcosh", "artanh", "arsech", "arcsch", "arcoth",
-        "arcsin", "arccos", "arcotan", "arcsec", "arccsc", "arccot",
-      ],
-    },
-  }, options);
+      builtinFunctions: {
+        primary: defaultBIFprimary,
+        secondary: defaultBIFsecondary,
+      },
+    };  
 
-  options.operatorSequence = options.operatorSequence ||
-    typeof options.extra.ellipsis !== "object"
-    // if it is not object, let's return false
-    // it will be equivalent to options.operatorSequence || false;
-    ? false
-    // if it is object, let's look inside for infixOperators
-    : options.extra.ellipsis.infixOperators;
+    options = merge(defaultOptions, options);
 
-  // validations
-  if (options.singleCharName)
-  options.functions.forEach((f)=>{
-    if(f.length !== 1) throw new OptionsError(`can't use multi-char functions when singleCharName = true`);
-  });
-  
+    options.operatorSequence = options.operatorSequence ||
+      typeof options.extra.ellipsis !== "object"
+      // if it is not object, let's return false
+      // it will be equivalent to options.operatorSequence || false;
+      ? false
+      // if it is object, let's look inside for infixOperators
+      : options.extra.ellipsis.infixOperators;
+
+    if (options.builtinFunctions.primary[0] === '...')
+      // replace the three dots with the default things.
+      options.builtinFunctions.primary.splice(0, 1, ...defaultBIFprimary);
+
+    if (options.builtinFunctions.secondary[0] === '...')
+      // replace the three dots with the default things.
+      options.builtinFunctions.secondary.splice(0, 1, ...defaultBIFsecondary);
+
+    if (options.builtinIDs[0] === '...')
+      // replace the three dots with the default things.
+      options.builtinIDs.splice(0, 1, ...defaultBIDs);
+
+    // validate options.functions
+    if (options.singleCharName)
+    options.functions.forEach((f)=>{
+      if(f.length !== 1) throw new OptionsError(`can't use multi-char functions when singleCharName = true`);
+    });    
+  }
+
   let
     // this will determine whether to continue parsing as BuiltinIDs or not
     factorNameMatched=false, // use for, `xpi` === `x*p*i`, to ignore builtinIDs
@@ -471,7 +493,6 @@ commaExpression =
 Ellipsis = _ "..." _ { return createNode("ellipsis") }
 
 CommaExpressionEllipsis = e:Ellipsis {
-  console.log("asdqweqwe")
   doesCMCE = true;
   return e;
 }
