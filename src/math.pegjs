@@ -86,7 +86,7 @@
     doesCMCE = [] // doesCommaExpressionContainsEllipsis
   ;
 
-  preParse(input, peg$computeLocation, error);
+  prepareInput(input, peg$computeLocation, error);
 
   // continue push char after another incase options.singleCharName == true
   // if we assembled a string which is not a function name

@@ -1,3 +1,5 @@
+// TODO: don't throw in case of "]1,2]", because it may be half opened interval
+
 module.exports = function preParse(input, peg$computeLocation, error) {
 
   let _;

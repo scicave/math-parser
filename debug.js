@@ -1,4 +1,4 @@
-const texParser = require('./lib/');
+const parser = require('./lib/');
 const prepareInput = require('./src/prepareInput.js');
 const { peg$computeLocation, error, SyntaxError, input } = require("./tests/pegjsPolyFill");
 let tex =
@@ -23,7 +23,7 @@ function log(fn, ...args){
   try {
     console.log(fn(...args));
   } catch (e) {
-    if (e instanceof SyntaxError || e instanceof texParser.SyntaxError) {
+    if (e instanceof SyntaxError || e instanceof parser.SyntaxError) {
       console.log('SyntaxError:', e.message);
 
       const i = e.location.start.line - 1;
@@ -52,4 +52,4 @@ function log(fn, ...args){
 
 process.argv.indexOf('--prepare') > -1
 ? log(prepareInput, tex, peg$computeLocation, error)
-: log(texParser.parse, tex);
+: log(parser.parse, tex);

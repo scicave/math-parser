@@ -37,7 +37,7 @@ let grammarFiles = [
     output: "../lib/index.js",
     dependencies: {
       Node: "./Node.js",
-      preParse: "./preParse.js",
+      prepareInput: "./prepareInput.js",
       version: "./version.js",
       merge: "./merge.js",
       OptionsError: "./OptionsError.js",
