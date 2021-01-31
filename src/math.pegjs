@@ -1,14 +1,9 @@
-// TODO: fix doesCMCE for deep expression an restore its previous
-// state when completing parsing and expression
-// e.g. `f(1, {2, ... , 5})` // the function `f` now has `ellipsis` as arguments
-// because when the `set` is parsed, deosCMCE is still true 
 /**
  * Pegjs rules of the major significant parts of the exression are __PascalCased__
  * The helper rules are __camelCased__
  */
 
 {
-
   {
     let defaultBIFprimary = [
       // can be used like "sinx, logx"
@@ -88,7 +83,7 @@
     // builtinFunctionName which will be assembled char by char, one after the other.
     // see pushChar function, 👇
     BIFName='', // builtinFunctionName 
-    doesCMCE = false // doesCommaExpressionContainsEllipsis
+    doesCMCE = [] // doesCommaExpressionContainsEllipsis
   ;
 
   preParse(input, peg$computeLocation, error);
@@ -99,6 +94,7 @@
   // the assembled may be a part of a function name, so
   // we have to check again the in the pegjs `Rule` that
   // BIFName is not a fake one. 
+  
   function pushChar(c, mode) {
     let arr;
     if (mode === "BIFPrimary")
@@ -124,34 +120,37 @@
   function createNode(...args){
     let n = new Node(...args);
     let ellipsis = options.extra.ellipsis;
+    let __doesCMCE = doesCMCE.length && doesCMCE.pop();
+    if (n.type === "automult" && !options.autoMult)
+      error(`implicit multiplication is not allowed (automult)`);
     if (n.type === "member expression" && !options.extra.memberExpressions)
       error(`tuples syntax is not allowed`);
     if (n.type === "tuple") {
       if (!options.extra.tuples)
         error('tuples syntax is not allowed');
       let ellipsisAllowed = typeof ellipsis === 'object' ? ellipsis.tuples : ellipsis;
-      if (doesCMCE && !ellipsisAllowed)
+      if (__doesCMCE && !ellipsisAllowed)
         error('ellipsis is not allowed to be in tuples');
     }
     if (n.type === "set") {
       if (!options.extra.sets)
         error('sets syntax is not allowed');
       let ellipsisAllowed = typeof ellipsis === 'object' ? ellipsis.sets : ellipsis;
-      if (doesCMCE && !ellipsisAllowed)
+      if (__doesCMCE && !ellipsisAllowed)
         error('ellipsis is not allowed to be in sets');
     }
     if (n.type === "matrix") {
       if (!options.extra.matrices)
         error('matrices syntax is not allowed');
       let ellipsisAllowed = typeof ellipsis === 'object' ? ellipsis.matrices : ellipsis;
-      if (doesCMCE && !ellipsisAllowed)
+      if (__doesCMCE && !ellipsisAllowed)
         error('ellipsis is not allowed to be in matrices');
     }
     if (n.type === "interval") {
       if (!options.extra.intervals)
         error('intervals syntax is not allowed');
       let ellipsisAllowed = typeof ellipsis === 'object' ? ellipsis.intervals : ellipsis;
-      if (doesCMCE && !ellipsisAllowed)
+      if (__doesCMCE && !ellipsisAllowed)
         error('ellipsis is not allowed to be in intervals');
     }
     n.match = {
@@ -357,9 +356,9 @@ FactorNotNumber =
 BlockVBars =
   "|" expr:Expression "|" { return createNode('abs', [expr]) }
 
-// ===============================
+// -------------------------------
 //          functions
-// ===============================
+// -------------------------------
 
 Functions "functions" =
   BIFPrimary / Function
@@ -427,41 +426,42 @@ MultiCharFunction =
   }
 
 functionParentheses =
-  functionParenthesesNotVoid / voidParentheses
-
-functionParenthesesNotVoid =
   // reset then continue
-  &{ doesCMCE = false; return true }
+  &{ doesCMCE.push(false); return true }
   "(" a:commaExpression ")"
   {
     let ellipsis = options.extra.ellipsis;
-    debugger;
     let ellipsisAllowed = typeof ellipsis === 'object' ? ellipsis.funcArgs : ellipsis;
-    if (doesCMCE && !ellipsisAllowed)
+    let __doesCMCE = doesCMCE.pop();
+    if (__doesCMCE && !ellipsisAllowed)
       error('ellipsis is not allowed to be an arg in a function');
     return Array.isArray(a) ? a : [a];
   }
+  /
+  // fallback when the previous grammar doesn't match
+  &{ doesCMCE.pop(); return true }
+  // match void parentheses
+  "(" _ ")" { return [] }; 
 
-// related to functions only
-voidParentheses = "(" _ ")" { return [] }; 
-
-// ===============================
+// -------------------------------
 //       brackets expression
-// ===============================
+// -------------------------------
 
 TupleOrExprOrParenOrIntervalOrSetOrMatrix =
   o:("("/"["/"{")
   // reset then continue
-  &{ doesCMCE = false; return true }
+  &{ doesCMCE.push(false); return true }
   arr2dOr1dArrOrExpr:commaSemiColonExpression
   c:(")"/"]"/"}")
   {
     return handleBlock(arr2dOr1dArrOrExpr, o, c);
   }
+  // fallback action, pop the last item
+  / &{ doesCMCE.pop(); return false } "a"
 
-// ===============================
+// -------------------------------
 //         general expression
-// ===============================
+// -------------------------------
 
 commaSemiColonExpression
   // no need for spaces around ";", they already exist
@@ -493,13 +493,13 @@ commaExpression =
 Ellipsis = _ "..." _ { return createNode("ellipsis") }
 
 CommaExpressionEllipsis = e:Ellipsis {
-  doesCMCE = true;
+  doesCMCE[doesCMCE.length - 1] = true;
   return e;
 }
 
-// ===============================
+// -------------------------------
 //            numbers
-// ===============================
+// -------------------------------
 
 Number "number"
   = sign:sign? _ $SimpleNumber {
@@ -519,9 +519,9 @@ frac
 sign
   = '-' / '+'
 
-// ===============================
+// -------------------------------
 //             IDs
-// ===============================
+// -------------------------------
 
 BuiltinIDs = &{ return !factorNameMatched } n:$multiCharName &{ return options.builtinIDs.indexOf(n) > -1 } {
   return createNode("id", null, { name: n, isBuiltin: true });
@@ -556,9 +556,9 @@ nameNME = &{ return !options.singleCharName } multiCharName / char[0-9]*
 
 multiCharName "multi char name"= (char/"_")+[0-9]*
 
-// ===============================
+// -------------------------------
 //       member expressions
-// ===============================
+// -------------------------------
 
 MemberExpression =
   // left to right
@@ -592,13 +592,13 @@ MemberExpressionFunction "member expression end with function" =
 memberFirstArg = Function / NameNME
 memberArg = MultiCharFunction / MultiCharNameNME 
 
-// ===============================
+// -------------------------------
 //          primitives
-// ===============================
+// -------------------------------
 
 char "letter"  = [a-zA-Z]
 
-nl "newline" = "\n" / "\r\n" / "\r"
+nl "newline" = "\n" / "\r\n"
 
 sp "space or tab"= [ \t]
 

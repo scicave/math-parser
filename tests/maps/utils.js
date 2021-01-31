@@ -100,4 +100,3 @@ class NodeCreator {
 }
 
 exports.node = new NodeCreator();
-
