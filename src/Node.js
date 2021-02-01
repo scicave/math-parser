@@ -76,7 +76,6 @@ Node.types = {
   SET: "set",
   ABS: "abs", // | value |
   ELLIPSIS: "ellipsis",
-  BLANK: "blank",
 };
 
 Node.types.values = Object.values(Node.types);
