@@ -14,6 +14,7 @@ Browser
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@scicave/math-parser/lib/bundle.js"></script>
+<!-- or -->
 <script src="https://cdn.jsdelivr.net/npm/@scicave/math-parser/lib/bundle.min.js"></script>
 ```
 

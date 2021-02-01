@@ -1,6 +1,6 @@
 {
   "name": "@scicave/math-parser",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "A mathematical parser. We mean by mathematical that, e.g., arithmetic operations is considered for example if you pass \"1+2\", the result would by a (add node \"+\") with two children nodes of type number.",
   "main": "lib/index.js",
   "files": [
@@ -45,6 +45,7 @@
   "devDependencies": {
     "jest": "^26.4.2",
     "nodemon": "^2.0.4",
+    "parcel": "^1.12.4",
     "pegjs": "^0.10.0",
     "rimraf": "^3.0.2"
   }
