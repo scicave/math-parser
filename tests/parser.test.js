@@ -1,7 +1,7 @@
 // TODO: add more tests
 
 const parser = require("parser");
-const preParse = require("preParse");
+const prepareInput = require("prepareInput");
 const testsMap = require("./maps");
 let quite = 0; // no struct or node logged when a test fails
 
@@ -113,7 +113,7 @@ describe("testing preParse module", () => {
     function computeLocation() {}
     function error (msg) { throw new SyntaxError(msg) }
     return (math) => {
-      return preParse(math, computeLocation, error);
+      return prepareInput(math, computeLocation, error);
     }
   })();
 
