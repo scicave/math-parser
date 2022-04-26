@@ -43,6 +43,7 @@
   "author": "scicave",
   "license": "MIT",
   "devDependencies": {
+    "commander": "^9.2.0",
     "jest": "^26.4.2",
     "nodemon": "^2.0.4",
     "parcel": "^1.12.4",
