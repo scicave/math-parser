@@ -98,6 +98,34 @@ module.exports = [
     struct: node.tuple(["t", "a"]),
   },
 
+  {
+    math: "]t, a)",
+    error: true,
+    errorType: "syntax",
+  },
+
+  {
+    math: "(t, a[",
+    error: true,
+    errorType: "syntax",
+  },
+
+  {
+    math: "[t, a[",
+    struct: node.interval(["t", "a"], {
+      startInclusive: true,
+      endInclusive: false,
+    }),
+  },
+
+  {
+    math: "]t, a]",
+    struct: node.interval(["t", "a"], {
+      startInclusive: false,
+      endInclusive: true,
+    }),
+  },
+
   // ************************
   //       blankTerms
   // ************************

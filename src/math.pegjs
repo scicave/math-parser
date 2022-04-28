@@ -73,20 +73,19 @@
     // validate options.functions
     if (options.singleCharName)
     options.functions.forEach((f)=>{
-      if(f.length !== 1) throw new OptionsError(`can't use multi-char functions when singleCharName = true`);
+      if(f.length !== 1) throw new OptionsError(`can not use multi-char functions when singleCharName = true`);
     });    
   }
 
-  let
-    // this will determine whether to continue parsing as BuiltinIDs or not
-    factorNameMatched=false, // use for, `xpi` === `x*p*i`, to ignore builtinIDs
-    // builtinFunctionName which will be assembled char by char, one after the other.
-    // see pushChar function, 👇
-    BIFName='', // builtinFunctionName 
-    doesCMCE = [] // doesCommaExpressionContainsEllipsis
-  ;
+  // this will determine whether to continue parsing as BuiltinIDs or not
+  // use for, `xpi` === `x*p*i`, to ignore builtinIDs
+  let factorNameMatched = false;
+  // builtinFunctionName which will be assembled char by char, one after the other.
+  // see pushChar function, 👇
+  let BIFName = ''; // builtinFunctionName 
+  const doesCMCE = []; // doesCommaExpressionContainsEllipsis
 
-  prepareInput(input, peg$computeLocation, error);
+  input = prepareInput(input, peg$computeLocation, error);
 
   // continue push char after another incase options.singleCharName == true
   // if we assembled a string which is not a function name
@@ -101,10 +100,10 @@
       arr = options.builtinFunctions.primary;
     else if (mode === "BIFSecondary")
       (arr = options.builtinFunctions.secondary);
-    else throw new Error("unexpecte error, math-parser: inside pushChar");
+    else throw new Error("unexpected mode pass to pushChar");
 
     let newTitle = BIFName + c, found = false;
-    for (let t of arr) {
+    for (const t of arr) {
       if (t.length === newTitle.length && t === newTitle ||
           t.length > newTitle.length && t.slice(0, newTitle.length) === newTitle) {
         found = true; break;
@@ -161,17 +160,9 @@
   }
 
   function handleBlock(node, o, c) {
-
     // node is expr or 1d array or 2d array
-    // validation, [), (], {}, [], () are allowed
-    if (
-      o === '[' && c === "}" ||
-      o === '{' && c === "]" ||
-      o === '(' && c === "}" ||
-      o === '{' && c === ")"
-    ) error(`unexpected closing for the block`);
+    // ------------------------------------
 
-    // set
     if (Array.isArray(node) && Array.isArray(node[0])) {
       if (o === "[" && c === "]") {
         // matrix
@@ -181,16 +172,21 @@
             error("matrix has different column sizes");
         return createNode("matrix", node, { shape: [ rows, cols ] });
       }
-      error("unexpected \";\" separetor in a block " + `"${o}${c}"`);
+      error("unexpected ';' separetor in a block " + `"${o}${c}"`);
     }
 
-    // now node is 1d array or expr
+    // validation, [), (], {}, [], (), ]], [[ are allowed
+    if (o === '{' && c !== "}") error(`unexpected closing for the block, expected '}'`);
+    if (o !== '{' && c === "}") error(`unexpected opening for the block, expected '{'`);
 
     // sets
     if (o === "{") { // c is "}"
       // set with one item
       return createNode("set", Array.isArray(node) ? node: [node]);
     }
+
+    // now node is 1d array or expr
+    // ----------------------------
 
     // tuple or interval or set
     if (Array.isArray(node)) {
@@ -207,16 +203,18 @@
       if (o === "[" || c === "]") error(`unexpected closing for the block`);
       if (node.length === 2 && !options.extra.tuples)
         return error("neither tuples nor intervals are allowed");
+      // it has to be ()
       return createNode("tuple", node);
     }
 
     // now node is expr
+    // ----------------
 
     // it is matrix
     if (o === "[" && c === "]")
       return createNode("matrix", [[node]]);
 
-    // extra validation, we are now dealing with "()"
+    // extra validation, it should be "()"
     if (o === "[" || c === "]")
       error(`unexpected brackets opening and closing`);
 
@@ -372,12 +370,14 @@ BIFPrimary =
 
 superScript "superscript" = "^" _ arg:Factor { return arg; }
 
+// we need this for senarios like "sinx", we can't use char+ or even
+// predefined values because the user can config hiw own primary functions
 bifPrimaryNames =
-  // reset and continue onlt if options.singleCharName
+  // reset and continue only if options.singleCharName
   &{ BIFName = ''; return options.singleCharName }
   (c:char &{ return pushChar(c, "BIFPrimary") })+
   // it may not be a complete title
-  &{ return options.builtinFunctions.primary.indexOf(BIFName) > -1 } {
+  &{ return options.builtinFunctions.primary.includes(BIFName) } {
     return BIFName;
   } /
   // when singleCharName is false
@@ -448,11 +448,11 @@ functionParentheses =
 // -------------------------------
 
 TupleOrExprOrParenOrIntervalOrSetOrMatrix =
-  o:("("/"["/"{")
+  o:("("/"["/"{"/"]")
   // reset then continue
   &{ doesCMCE.push(false); return true }
   arr2dOr1dArrOrExpr:commaSemiColonExpression
-  c:(")"/"]"/"}")
+  c:(")"/"]"/"}"/"[")
   {
     return handleBlock(arr2dOr1dArrOrExpr, o, c);
   }
