@@ -1,4 +1,5 @@
-const { node } = require("./utils");
+const node = require("./NodeFactory");
+console.log(node)
 
 module.exports = [
   {

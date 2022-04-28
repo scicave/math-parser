@@ -1,7 +1,6 @@
-const { node } = require("./utils");
+const node = require("./NodeFactory");
 
 module.exports = [
-
   {
     title: 'should parse: as tuple not interval when finding ellipsis "..."',
     math: "(..., a)",
@@ -15,17 +14,36 @@ module.exports = [
   },
 
   {
-    title:
-      'should throw: interval, but it isn\'t considered so, because of "..."',
+    title: 'should throw: interval, but it isn\'t considered so, because of "..."',
     math: "[a, ...)",
     error: true,
     errorType: "syntax",
   },
 
   {
-    title:
-      'should throw: interval, but it isn\'t considered so, because of "..."',
+    title: 'should throw: interval, but it isn\'t considered so, because of "..."',
     math: "(a, ...]",
+    error: true,
+    errorType: "syntax",
+  },
+
+  {
+    title: 'should throw: interval, but it isn\'t considered so, because of "..."',
+    math: "]a, ...]",
+    error: true,
+    errorType: "syntax",
+  },
+
+  {
+    title: 'should throw: interval, but it isn\'t considered so, because of "..."',
+    math: "]a, ...[",
+    error: true,
+    errorType: "syntax",
+  },
+
+  {
+    title: 'should throw: interval, but it isn\'t considered so, because of "..."',
+    math: "[a, ...[",
     error: true,
     errorType: "syntax",
   },
@@ -60,20 +78,21 @@ module.exports = [
 
   {
     math: "f(...)",
-    error: true, errorType: "syntax",
+    error: true,
+    errorType: "syntax",
   },
 
   {
     title: `should parse: as automult of "f" and a tuple`,
     math: "f(..., 2)",
-    struct: node.am(["f", node.tuple([node.ellipsis, 2])])
+    struct: node.am(["f", node.tuple([node.ellipsis, 2])]),
   },
 
   {
     title: "should parse: as function with ellipsis as arg",
     math: "f(..., 2)",
-    parserOptions: { functions: ['f'] },
-    struct: node.F("f", [node.ellipsis, 2])
+    parserOptions: { functions: ["f"] },
+    struct: node.F("f", [node.ellipsis, 2]),
   },
 
   // ************************
@@ -84,44 +103,39 @@ module.exports = [
   //   math: "1 + 2 + ... + 10",
   //   struct: node.sqop("+", [1, 2, node.ellipsis, 10]),
   // },
-
+  //
   // {
   //   math: "... + 10",
-  //   error: true,
-  //   errorType: "syntax",
+  //   struct: node.sqop("+", [node.ellipsis, 10]),
   // },
-
+  //
   // {
   //   math: "10 + ...",
-  //   error: true,
-  //   errorType: "syntax",
+  //   struct: node.sqop("+", [10, node.ellipsis]),
   // },
-
+  //
   // {
   //   math: "10 + ... + 10",
   //   struct: node.sqop("+", [10, node.ellipsis, 10]),
   // },
-
+  //
   // {
   //   math: "10 + ... * a + 10",
   //   error: true,
   //   errorType: "syntax",
   // },
-
+  //
   // {
   //   math: "10 + 1 * ... * a + 10",
-  //   struct: node.op("+", [
-  //     node.op("+", [10, node.sqop("*", [1, node.ellipsis, "a"])]),
-  //     10,
-  //   ]),
+  //   struct: node.sqop("+", [10, node.sqop("*", [1, node.ellipsis, "a"]), 10]),
   // },
-
+  //
   // {
   //   math: "y + a * ... + 10",
   //   error: true,
   //   errorType: "syntax",
   // },
-
+  //
   // {
   //   math: "y + a * sinx * ... - 10",
   //   struct: node.op("-", [
@@ -132,5 +146,4 @@ module.exports = [
   //     10,
   //   ]),
   // },
-
-]
+];

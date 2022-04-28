@@ -1,4 +1,4 @@
-const { node } = require("./utils");
+const node = require("./NodeFactory");
 const ellipsis = require("./extra__ellipsis");
 
 module.exports = [

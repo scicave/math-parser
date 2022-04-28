@@ -16,9 +16,9 @@
   "homepage": "https://github.com/scicave/math-parser#readme",
   "jest": {
     "moduleNameMapper": {
-      "parser": "<rootDir>/lib/index.js",
-      "prepareInput": "<rootDir>/lib/prepareInput.js",
-      "Node": "<rootDir>/lib/Node.js"
+      "parser(.js)?$": "<rootDir>/lib/index.js",
+      "prepareInput(.js)?$": "<rootDir>/src/prepareInput.js",
+      "Node(.js)?$": "<rootDir>/src/Node.js"
     }
   },
   "scripts": {
