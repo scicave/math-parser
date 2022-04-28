@@ -16,13 +16,11 @@ module.exports = [
 
   {
     math: "sin2",
-    // error: true, errorType: "syntax"
     struct: node.BIF("sin", [2]),
   },
 
   {
     math: "sin2!",
-    // error: true, errorType: "syntax"
     struct: node.BIF("sin", [node.pOP("!", [2])]),
   },
 
@@ -43,8 +41,7 @@ module.exports = [
   },
 
   {
-    title:
-      "should parse: as automult when not found in builtinFunction or functions",
+    title: "should parse: as automult when not found in builtinFunction or functions",
     math: "sin(2)",
     parserOptions: { builtinFunctions: { primary: [], secondary: [] } },
     struct: node.am([node.am([node.am(["s", "i"]), "n"]), 2]),
@@ -59,19 +56,13 @@ module.exports = [
   {
     math: "axsin3y",
     parserOptions: { functions: ["f"] },
-    struct: node.am([
-      node.am(["a", "x"]),
-      node.BIF("sin", [node.am([3, "y"])]),
-    ]),
+    struct: node.am([node.am(["a", "x"]), node.BIF("sin", [node.am([3, "y"])])]),
   },
 
   {
     math: "f(v +2 )(3/2)",
     parserOptions: { functions: ["f"] },
-    struct: node.am([
-      node.F("f", [node.op("+", ["v", 2])]),
-      node.op("/", [3, 2]),
-    ]),
+    struct: node.am([node.F("f", [node.op("+", ["v", 2])]), node.op("/", [3, 2])]),
   },
 
   {
@@ -83,9 +74,6 @@ module.exports = [
   {
     math: "2f(cosx,2)!",
     parserOptions: { functions: ["f"] },
-    struct: node.am([
-      2,
-      node.pOP("!", [node.F("f", [node.BIF("cos", ["x"]), 2])]),
-    ]),
+    struct: node.am([2, node.pOP("!", [node.F("f", [node.BIF("cos", ["x"]), 2])])]),
   },
 ];

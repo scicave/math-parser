@@ -3,10 +3,10 @@ const singleChar__memExpr = require("./singleChar__memExpr");
 const singleChar__functions = require("./singleChar__functions");
 const singleChar__autoMult = require("./singleChar__autoMult");
 const singleChar__BID = require("./singleChar__BID");
-const noSingleChar__memExpr = require("./noSingleChar__memExpr");
-const noSingleChar__functions = require("./noSingleChar__functions");
-const noSingleChar__autoMult = require("./noSingleChar__autoMult");
-const noSingleChar__BID = require("./noSingleChar__BID");
+const multiChar__memExpr = require("./multiChar__memExpr");
+const multiChar__functions = require("./multiChar__functions");
+const multiChar__autoMult = require("./multiChar__autoMult");
+const multiChar__BID = require("./multiChar__BID");
 const options = require("./options");
 const extra = require("./extra");
 
@@ -23,10 +23,10 @@ module.exports = {
   },
 
   "singleCharName=false": {
-    "member expression": noSingleChar__memExpr,
-    "functions": noSingleChar__functions,
-    "auto multiplication": noSingleChar__autoMult,
-    "builtInVariables": noSingleChar__BID,
+    "member expression": multiChar__memExpr,
+    "functions": multiChar__functions,
+    "auto multiplication": multiChar__autoMult,
+    "builtInVariables": multiChar__BID,
   }
 };
 
