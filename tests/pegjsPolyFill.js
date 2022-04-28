@@ -1,14 +1,14 @@
-
 // ---------------------------------
 //         PEGjs polyfill
 // ---------------------------------
 
-let input = { value: "" }; 
-
-let peg$posDetailsCache  = [{ line: 1, column: 1 }];
+const parser = require("../lib");
+const input = { value: "" };
+const peg$posDetailsCache = [{ line: 1, column: 1 }];
 
 function peg$computePosDetails(pos) {
-  var details = peg$posDetailsCache[pos], p;
+  var details = peg$posDetailsCache[pos],
+    p;
 
   if (details) {
     return details;
@@ -20,8 +20,8 @@ function peg$computePosDetails(pos) {
 
     details = peg$posDetailsCache[p];
     details = {
-      line:   details.line,
-      column: details.column
+      line: details.line,
+      column: details.column,
     };
 
     while (p < pos) {
@@ -42,37 +42,29 @@ function peg$computePosDetails(pos) {
 
 function peg$computeLocation(startPos, endPos) {
   var startPosDetails = peg$computePosDetails(startPos),
-      endPosDetails   = peg$computePosDetails(endPos);
+    endPosDetails = peg$computePosDetails(endPos);
 
   return {
     start: {
       offset: startPos,
-      line:   startPosDetails.line,
-      column: startPosDetails.column
+      line: startPosDetails.line,
+      column: startPosDetails.column,
     },
     end: {
       offset: endPos,
-      line:   endPosDetails.line,
-      column: endPosDetails.column
-    }
+      line: endPosDetails.line,
+      column: endPosDetails.column,
+    },
   };
 }
 
 function error(message, location) {
-  location = location !== void 0 ? location : peg$computeLocation(peg$savedPos, peg$currPos)
-  throw new SyntaxError(message, location);
-}
-
-class SyntaxError extends Error {
-  constructor (msg, location) {
-    super(msg);
-    this.location = location;
-  }
+  throw new parser.SyntaxError(message, null, null, location);
 }
 
 module.exports = {
   peg$computeLocation,
+  SyntaxError: parser.SyntaxError,
   error,
-  SyntaxError,
-  input
-}
+  input,
+};
