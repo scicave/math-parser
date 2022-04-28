@@ -190,20 +190,22 @@
 
     // tuple or interval or set
     if (Array.isArray(node)) {
-      if (node.length === 2 && options.extra.intervals)
-        // make sure not have ellpsis
-        if (node[0].type !== "ellipsis" &&
-            node[1].type !== "ellipsis") {
-              return createNode("interval", node, { startInclusive: o==="[", endInclusive: c==="]" });
-            }
+      if (node.length === 2 && options.extra.intervals) {
+        if (node[0].type === "ellipsis" || node[1].type === "ellipsis") {
+          if (o + c !== "[]" && o + c !== "()")
+            error("ellipsis is not allowed in intervals");
+        } else {
+          return createNode("interval", node, { startInclusive: o==="[", endInclusive: c==="]" });
+        }
+      }
+
       // matrix
       if (o === "[" && c === "]") 
         return createNode("matrix", [node]);
       // all possible expressions for "[]" are consumed here
-      if (o === "[" || c === "]") error(`unexpected closing for the block`);
+      if (o !== "(" || c !== ")") error(`unexpected closing for the block`);
       if (node.length === 2 && !options.extra.tuples)
         return error("neither tuples nor intervals are allowed");
-      // it has to be ()
       return createNode("tuple", node);
     }
 
