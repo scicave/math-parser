@@ -2,6 +2,18 @@ const node = require("./NodeFactory");
 
 module.exports = [
   {
+    math: "(...)",
+    error: true,
+    errorType: "syntax",
+  },
+
+  {
+    math: "...",
+    error: true,
+    errorType: "syntax",
+  },
+
+  {
     title: 'should parse: as tuple not interval when finding ellipsis "..."',
     math: "(..., a)",
     struct: node.tuple([node.ellipsis, "a"]),
@@ -99,51 +111,57 @@ module.exports = [
   //    sequence operators
   // ************************
 
-  // {
-  //   math: "1 + 2 + ... + 10",
-  //   struct: node.sqop("+", [1, 2, node.ellipsis, 10]),
-  // },
-  //
-  // {
-  //   math: "... + 10",
-  //   struct: node.sqop("+", [node.ellipsis, 10]),
-  // },
-  //
-  // {
-  //   math: "10 + ...",
-  //   struct: node.sqop("+", [10, node.ellipsis]),
-  // },
-  //
-  // {
-  //   math: "10 + ... + 10",
-  //   struct: node.sqop("+", [10, node.ellipsis, 10]),
-  // },
-  //
-  // {
-  //   math: "10 + ... * a + 10",
-  //   error: true,
-  //   errorType: "syntax",
-  // },
-  //
-  // {
-  //   math: "10 + 1 * ... * a + 10",
-  //   struct: node.sqop("+", [10, node.sqop("*", [1, node.ellipsis, "a"]), 10]),
-  // },
-  //
-  // {
-  //   math: "y + a * ... + 10",
-  //   error: true,
-  //   errorType: "syntax",
-  // },
-  //
-  // {
-  //   math: "y + a * sinx * ... - 10",
-  //   struct: node.op("-", [
-  //     node.op("+", [
-  //       "y",
-  //       node.sqop("*", ["a", node.BIF("sin", ["x"]), node.ellipsis]),
-  //     ]),
-  //     10,
-  //   ]),
-  // },
+  {
+    math: "1 + 2 + (...) + 10",
+    error: true,
+    errorType: "syntax",
+  },
+
+  {
+    math: "1 + 2 + ... + 10",
+    struct: node.opsq("+", [1, 2, node.ellipsis, 10]),
+  },
+
+  {
+    math: "... + 10",
+    struct: node.opsq("+", [node.ellipsis, 10]),
+  },
+
+  {
+    math: "10 + ...",
+    struct: node.opsq("+", [10, node.ellipsis]),
+  },
+
+  {
+    math: "10 + ... + 10",
+    struct: node.opsq("+", [10, node.ellipsis, 10]),
+  },
+
+  {
+    math: "10 + ... * a + 10",
+    error: true,
+    errorType: "syntax",
+  },
+
+  {
+    math: "10 + 1 * ... * a + 10",
+    struct: node.opsq("+", [10, node.opsq("*", [1, node.ellipsis, "a"]), 10]),
+  },
+
+  {
+    math: "y + a * ... + 10",
+    error: true,
+    errorType: "syntax",
+  },
+
+  {
+    math: "y + a * sinx * ... - 10",
+    struct: node.op("-", [
+      node.op("+", [
+        "y",
+        node.opsq("*", ["a", node.BIF("sin", ["x"]), node.ellipsis]),
+      ]),
+      10,
+    ]),
+  },
 ];

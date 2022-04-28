@@ -37,11 +37,11 @@ module.exports = class NodeFactory {
     return { type: "operator", operatorType: "postfix", name, args };
   }
 
-  static sqop(name, args) {
+  static opsq(name, args) {
     // postfix operator
     if (typeof name !== "string" || !Array.isArray(args))
-      NodeFactory.#invalidArgs("sequence operator");
-    return { type: "sequence operator", name, args };
+      NodeFactory.#invalidArgs("operator sequence");
+    return { type: "operator sequence", name, args };
   }
 
   static am(args) {
